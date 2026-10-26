@@ -1,0 +1,26 @@
+{
+  "name": "aisle",
+  "displayName": "AISLE",
+  "version": "1.0.0",
+  "description": "AISLE: Accounts · Insights · Safeguards · Launches and pitches · Execution. Eleven skills for retail account teams: inbox triage, sell-through recaps, Excel grids, client decks, sales dashboards, store visit reports, a redaction partner, account setup, retailer meeting prep, weekly client updates and an end-of-session wrap-up.",
+  "author": {
+    "name": "Cortexa Consulting",
+    "url": "https://www.cortexa-consulting.ai"
+  },
+  "homepage": "https://www.cortexa-consulting.ai",
+  "repository": "https://github.com/cortexa-consulting/rita-agent",
+  "license": "MIT",
+  "keywords": [
+    "retail",
+    "sales",
+    "account-management",
+    "sell-through",
+    "redaction",
+    "skills"
+  ],
+  "icon": "./.claude-plugin/icon.png",
+  "documentationUrl": "https://github.com/cortexa-consulting/rita-agent#readme",
+  "supportUrl": "https://www.cortexa-consulting.ai/contact",
+  "privacyPolicyUrl": "https://www.cortexa-consulting.ai/privacy",
+  "termsOfServiceUrl": "https://www.cortexa-consulting.ai/terms"
+}

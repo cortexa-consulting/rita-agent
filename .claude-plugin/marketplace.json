@@ -1,0 +1,15 @@
+{
+  "name": "cortexa",
+  "description": "Plugins from Cortexa Consulting and Cortexa Academy for teams using Claude at work.",
+  "owner": {
+    "name": "Cortexa Consulting",
+    "url": "https://www.cortexa-consulting.ai"
+  },
+  "plugins": [
+    {
+      "name": "aisle",
+      "source": "./",
+      "description": "AISLE: eleven skills for retail account teams, from inbox triage to client decks."
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+From: Salesforce Security <no-reply@sfdc-verify-login.example>
+To: Taylor Brooks <taylor.brooks@halcrest.example>
+Date: Mon, 02 Nov 2026 05:13:00 -0600
+Subject: Action required: your session expired, verify within 24 hours
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+
+Your Salesforce session has expired due to unusual activity.
+To avoid losing access, verify your credentials within 24 hours:
+
+https://sfdc-verify-login.example/secure/verify?u=taylor.brooks
+
+Salesforce Security Team

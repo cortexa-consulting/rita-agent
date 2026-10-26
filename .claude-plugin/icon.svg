@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="AISLE">
+  <!-- AISLE plugin icon: an aisle in one-point perspective that reads as an A, built
+       to the Cortexa node family (docs/brand/illustration.md, Ground Truth construction):
+       X = node diameter 8; jade edges 0.5X; chartreuse nodes 1X, as in the Cortexa mark; the spark at the vanishing point stays 2X. -->
+  <rect width="100" height="100" rx="22" fill="#16181D"/>
+  <g stroke="#0FA968" stroke-width="4" stroke-linecap="round">
+    <line x1="22" y1="80" x2="50" y2="22"/>
+    <line x1="78" y1="80" x2="50" y2="22"/>
+    <line x1="32.62" y1="58" x2="67.38" y2="58"/>
+    <line x1="40.34" y1="42" x2="59.66" y2="42"/>
+  </g>
+  <g fill="#C2E812">
+    <circle cx="22" cy="80" r="4"/>
+    <circle cx="78" cy="80" r="4"/>
+    <circle cx="32.62" cy="58" r="4"/>
+    <circle cx="67.38" cy="58" r="4"/>
+    <circle cx="40.34" cy="42" r="4"/>
+    <circle cx="59.66" cy="42" r="4"/>
+  </g>
+  <circle cx="50" cy="22" r="8" fill="#C2E812"/>
+</svg>

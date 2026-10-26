@@ -1,0 +1,12 @@
+# Redact & Restore key files undo the redaction. Never commit or share them.
+redaction-key-*.json
+*-key.json
+# Redacted copies of your own files stay on your computer too.
+*-redacted.*
+
+# Work Claude produces when you run the kit in place.
+outputs/
+
+# Operating system clutter.
+.DS_Store
+Thumbs.db

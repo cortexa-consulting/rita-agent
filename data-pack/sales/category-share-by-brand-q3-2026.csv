@@ -1,0 +1,521 @@
+week_ending,retailer,category,brand,units
+2026-07-11,Best Byte,Laptops,Dalton,277
+2026-07-11,Best Byte,Laptops,HavenPoint,336
+2026-07-11,Best Byte,Laptops,Samsonic,215
+2026-07-11,Best Byte,Laptops,All other,413
+2026-07-11,Best Byte,Monitors,Dalton,110
+2026-07-11,Best Byte,Monitors,HavenPoint,73
+2026-07-11,Best Byte,Monitors,Samsonic,192
+2026-07-11,Best Byte,Monitors,All other,242
+2026-07-11,Macro Center,Laptops,Dalton,23
+2026-07-11,Macro Center,Laptops,HavenPoint,50
+2026-07-11,Macro Center,Laptops,Samsonic,31
+2026-07-11,Macro Center,Laptops,All other,57
+2026-07-11,Macro Center,Monitors,Dalton,34
+2026-07-11,Macro Center,Monitors,HavenPoint,26
+2026-07-11,Macro Center,Monitors,Samsonic,70
+2026-07-11,Macro Center,Monitors,All other,82
+2026-07-11,ValuMart,Laptops,Dalton,197
+2026-07-11,ValuMart,Laptops,HavenPoint,416
+2026-07-11,ValuMart,Laptops,Samsonic,255
+2026-07-11,ValuMart,Laptops,All other,479
+2026-07-11,ValuMart,Monitors,Dalton,73
+2026-07-11,ValuMart,Monitors,HavenPoint,72
+2026-07-11,ValuMart,Monitors,Samsonic,184
+2026-07-11,ValuMart,Monitors,All other,232
+2026-07-11,Costwise Club,Laptops,Dalton,64
+2026-07-11,Costwise Club,Laptops,HavenPoint,70
+2026-07-11,Costwise Club,Laptops,Samsonic,43
+2026-07-11,Costwise Club,Laptops,All other,82
+2026-07-11,Costwise Club,Monitors,Dalton,37
+2026-07-11,Costwise Club,Monitors,HavenPoint,21
+2026-07-11,Costwise Club,Monitors,Samsonic,58
+2026-07-11,Costwise Club,Monitors,All other,69
+2026-07-11,Bullseye,Laptops,Dalton,47
+2026-07-11,Bullseye,Laptops,HavenPoint,105
+2026-07-11,Bullseye,Laptops,Samsonic,63
+2026-07-11,Bullseye,Laptops,All other,126
+2026-07-11,Bullseye,Monitors,Dalton,30
+2026-07-11,Bullseye,Monitors,HavenPoint,33
+2026-07-11,Bullseye,Monitors,Samsonic,87
+2026-07-11,Bullseye,Monitors,All other,101
+2026-07-18,Best Byte,Laptops,Dalton,326
+2026-07-18,Best Byte,Laptops,HavenPoint,410
+2026-07-18,Best Byte,Laptops,Samsonic,265
+2026-07-18,Best Byte,Laptops,All other,491
+2026-07-18,Best Byte,Monitors,Dalton,113
+2026-07-18,Best Byte,Monitors,HavenPoint,80
+2026-07-18,Best Byte,Monitors,Samsonic,193
+2026-07-18,Best Byte,Monitors,All other,237
+2026-07-18,Macro Center,Laptops,Dalton,25
+2026-07-18,Macro Center,Laptops,HavenPoint,53
+2026-07-18,Macro Center,Laptops,Samsonic,34
+2026-07-18,Macro Center,Laptops,All other,67
+2026-07-18,Macro Center,Monitors,Dalton,34
+2026-07-18,Macro Center,Monitors,HavenPoint,27
+2026-07-18,Macro Center,Monitors,Samsonic,65
+2026-07-18,Macro Center,Monitors,All other,86
+2026-07-18,ValuMart,Laptops,Dalton,199
+2026-07-18,ValuMart,Laptops,HavenPoint,403
+2026-07-18,ValuMart,Laptops,Samsonic,236
+2026-07-18,ValuMart,Laptops,All other,462
+2026-07-18,ValuMart,Monitors,Dalton,77
+2026-07-18,ValuMart,Monitors,HavenPoint,77
+2026-07-18,ValuMart,Monitors,Samsonic,199
+2026-07-18,ValuMart,Monitors,All other,248
+2026-07-18,Costwise Club,Laptops,Dalton,70
+2026-07-18,Costwise Club,Laptops,HavenPoint,79
+2026-07-18,Costwise Club,Laptops,Samsonic,47
+2026-07-18,Costwise Club,Laptops,All other,97
+2026-07-18,Costwise Club,Monitors,Dalton,37
+2026-07-18,Costwise Club,Monitors,HavenPoint,23
+2026-07-18,Costwise Club,Monitors,Samsonic,54
+2026-07-18,Costwise Club,Monitors,All other,70
+2026-07-18,Bullseye,Laptops,Dalton,54
+2026-07-18,Bullseye,Laptops,HavenPoint,122
+2026-07-18,Bullseye,Laptops,Samsonic,76
+2026-07-18,Bullseye,Laptops,All other,135
+2026-07-18,Bullseye,Monitors,Dalton,30
+2026-07-18,Bullseye,Monitors,HavenPoint,34
+2026-07-18,Bullseye,Monitors,Samsonic,83
+2026-07-18,Bullseye,Monitors,All other,99
+2026-07-25,Best Byte,Laptops,Dalton,367
+2026-07-25,Best Byte,Laptops,HavenPoint,451
+2026-07-25,Best Byte,Laptops,Samsonic,278
+2026-07-25,Best Byte,Laptops,All other,543
+2026-07-25,Best Byte,Monitors,Dalton,121
+2026-07-25,Best Byte,Monitors,HavenPoint,84
+2026-07-25,Best Byte,Monitors,Samsonic,212
+2026-07-25,Best Byte,Monitors,All other,255
+2026-07-25,Macro Center,Laptops,Dalton,28
+2026-07-25,Macro Center,Laptops,HavenPoint,59
+2026-07-25,Macro Center,Laptops,Samsonic,39
+2026-07-25,Macro Center,Laptops,All other,75
+2026-07-25,Macro Center,Monitors,Dalton,35
+2026-07-25,Macro Center,Monitors,HavenPoint,27
+2026-07-25,Macro Center,Monitors,Samsonic,67
+2026-07-25,Macro Center,Monitors,All other,83
+2026-07-25,ValuMart,Laptops,Dalton,270
+2026-07-25,ValuMart,Laptops,HavenPoint,527
+2026-07-25,ValuMart,Laptops,Samsonic,322
+2026-07-25,ValuMart,Laptops,All other,651
+2026-07-25,ValuMart,Monitors,Dalton,74
+2026-07-25,ValuMart,Monitors,HavenPoint,74
+2026-07-25,ValuMart,Monitors,Samsonic,188
+2026-07-25,ValuMart,Monitors,All other,231
+2026-07-25,Costwise Club,Laptops,Dalton,81
+2026-07-25,Costwise Club,Laptops,HavenPoint,93
+2026-07-25,Costwise Club,Laptops,Samsonic,54
+2026-07-25,Costwise Club,Laptops,All other,104
+2026-07-25,Costwise Club,Monitors,Dalton,35
+2026-07-25,Costwise Club,Monitors,HavenPoint,22
+2026-07-25,Costwise Club,Monitors,Samsonic,53
+2026-07-25,Costwise Club,Monitors,All other,65
+2026-07-25,Bullseye,Laptops,Dalton,60
+2026-07-25,Bullseye,Laptops,HavenPoint,135
+2026-07-25,Bullseye,Laptops,Samsonic,80
+2026-07-25,Bullseye,Laptops,All other,148
+2026-07-25,Bullseye,Monitors,Dalton,35
+2026-07-25,Bullseye,Monitors,HavenPoint,37
+2026-07-25,Bullseye,Monitors,Samsonic,100
+2026-07-25,Bullseye,Monitors,All other,118
+2026-08-01,Best Byte,Laptops,Dalton,432
+2026-08-01,Best Byte,Laptops,HavenPoint,550
+2026-08-01,Best Byte,Laptops,Samsonic,348
+2026-08-01,Best Byte,Laptops,All other,611
+2026-08-01,Best Byte,Monitors,Dalton,136
+2026-08-01,Best Byte,Monitors,HavenPoint,95
+2026-08-01,Best Byte,Monitors,Samsonic,224
+2026-08-01,Best Byte,Monitors,All other,292
+2026-08-01,Macro Center,Laptops,Dalton,32
+2026-08-01,Macro Center,Laptops,HavenPoint,69
+2026-08-01,Macro Center,Laptops,Samsonic,41
+2026-08-01,Macro Center,Laptops,All other,81
+2026-08-01,Macro Center,Monitors,Dalton,37
+2026-08-01,Macro Center,Monitors,HavenPoint,31
+2026-08-01,Macro Center,Monitors,Samsonic,77
+2026-08-01,Macro Center,Monitors,All other,96
+2026-08-01,ValuMart,Laptops,Dalton,304
+2026-08-01,ValuMart,Laptops,HavenPoint,613
+2026-08-01,ValuMart,Laptops,Samsonic,371
+2026-08-01,ValuMart,Laptops,All other,711
+2026-08-01,ValuMart,Monitors,Dalton,79
+2026-08-01,ValuMart,Monitors,HavenPoint,83
+2026-08-01,ValuMart,Monitors,Samsonic,205
+2026-08-01,ValuMart,Monitors,All other,252
+2026-08-01,Costwise Club,Laptops,Dalton,92
+2026-08-01,Costwise Club,Laptops,HavenPoint,104
+2026-08-01,Costwise Club,Laptops,Samsonic,62
+2026-08-01,Costwise Club,Laptops,All other,121
+2026-08-01,Costwise Club,Monitors,Dalton,39
+2026-08-01,Costwise Club,Monitors,HavenPoint,23
+2026-08-01,Costwise Club,Monitors,Samsonic,59
+2026-08-01,Costwise Club,Monitors,All other,76
+2026-08-01,Bullseye,Laptops,Dalton,116
+2026-08-01,Bullseye,Laptops,HavenPoint,256
+2026-08-01,Bullseye,Laptops,Samsonic,158
+2026-08-01,Bullseye,Laptops,All other,289
+2026-08-01,Bullseye,Monitors,Dalton,37
+2026-08-01,Bullseye,Monitors,HavenPoint,43
+2026-08-01,Bullseye,Monitors,Samsonic,106
+2026-08-01,Bullseye,Monitors,All other,131
+2026-08-08,Best Byte,Laptops,Dalton,442
+2026-08-08,Best Byte,Laptops,HavenPoint,636
+2026-08-08,Best Byte,Laptops,Samsonic,352
+2026-08-08,Best Byte,Laptops,All other,707
+2026-08-08,Best Byte,Monitors,Dalton,129
+2026-08-08,Best Byte,Monitors,HavenPoint,91
+2026-08-08,Best Byte,Monitors,Samsonic,219
+2026-08-08,Best Byte,Monitors,All other,288
+2026-08-08,Macro Center,Laptops,Dalton,38
+2026-08-08,Macro Center,Laptops,HavenPoint,85
+2026-08-08,Macro Center,Laptops,Samsonic,54
+2026-08-08,Macro Center,Laptops,All other,100
+2026-08-08,Macro Center,Monitors,Dalton,42
+2026-08-08,Macro Center,Monitors,HavenPoint,32
+2026-08-08,Macro Center,Monitors,Samsonic,88
+2026-08-08,Macro Center,Monitors,All other,108
+2026-08-08,ValuMart,Laptops,Dalton,353
+2026-08-08,ValuMart,Laptops,HavenPoint,738
+2026-08-08,ValuMart,Laptops,Samsonic,452
+2026-08-08,ValuMart,Laptops,All other,818
+2026-08-08,ValuMart,Monitors,Dalton,83
+2026-08-08,ValuMart,Monitors,HavenPoint,83
+2026-08-08,ValuMart,Monitors,Samsonic,207
+2026-08-08,ValuMart,Monitors,All other,259
+2026-08-08,Costwise Club,Laptops,Dalton,103
+2026-08-08,Costwise Club,Laptops,HavenPoint,123
+2026-08-08,Costwise Club,Laptops,Samsonic,72
+2026-08-08,Costwise Club,Laptops,All other,138
+2026-08-08,Costwise Club,Monitors,Dalton,40
+2026-08-08,Costwise Club,Monitors,HavenPoint,24
+2026-08-08,Costwise Club,Monitors,Samsonic,59
+2026-08-08,Costwise Club,Monitors,All other,74
+2026-08-08,Bullseye,Laptops,Dalton,132
+2026-08-08,Bullseye,Laptops,HavenPoint,298
+2026-08-08,Bullseye,Laptops,Samsonic,184
+2026-08-08,Bullseye,Laptops,All other,355
+2026-08-08,Bullseye,Monitors,Dalton,37
+2026-08-08,Bullseye,Monitors,HavenPoint,40
+2026-08-08,Bullseye,Monitors,Samsonic,102
+2026-08-08,Bullseye,Monitors,All other,128
+2026-08-15,Best Byte,Laptops,Dalton,459
+2026-08-15,Best Byte,Laptops,HavenPoint,665
+2026-08-15,Best Byte,Laptops,Samsonic,360
+2026-08-15,Best Byte,Laptops,All other,697
+2026-08-15,Best Byte,Monitors,Dalton,140
+2026-08-15,Best Byte,Monitors,HavenPoint,98
+2026-08-15,Best Byte,Monitors,Samsonic,247
+2026-08-15,Best Byte,Monitors,All other,291
+2026-08-15,Macro Center,Laptops,Dalton,37
+2026-08-15,Macro Center,Laptops,HavenPoint,84
+2026-08-15,Macro Center,Laptops,Samsonic,50
+2026-08-15,Macro Center,Laptops,All other,100
+2026-08-15,Macro Center,Monitors,Dalton,42
+2026-08-15,Macro Center,Monitors,HavenPoint,34
+2026-08-15,Macro Center,Monitors,Samsonic,86
+2026-08-15,Macro Center,Monitors,All other,104
+2026-08-15,ValuMart,Laptops,Dalton,315
+2026-08-15,ValuMart,Laptops,HavenPoint,658
+2026-08-15,ValuMart,Laptops,Samsonic,397
+2026-08-15,ValuMart,Laptops,All other,722
+2026-08-15,ValuMart,Monitors,Dalton,87
+2026-08-15,ValuMart,Monitors,HavenPoint,84
+2026-08-15,ValuMart,Monitors,Samsonic,212
+2026-08-15,ValuMart,Monitors,All other,270
+2026-08-15,Costwise Club,Laptops,Dalton,109
+2026-08-15,Costwise Club,Laptops,HavenPoint,123
+2026-08-15,Costwise Club,Laptops,Samsonic,73
+2026-08-15,Costwise Club,Laptops,All other,148
+2026-08-15,Costwise Club,Monitors,Dalton,42
+2026-08-15,Costwise Club,Monitors,HavenPoint,26
+2026-08-15,Costwise Club,Monitors,Samsonic,61
+2026-08-15,Costwise Club,Monitors,All other,77
+2026-08-15,Bullseye,Laptops,Dalton,129
+2026-08-15,Bullseye,Laptops,HavenPoint,296
+2026-08-15,Bullseye,Laptops,Samsonic,168
+2026-08-15,Bullseye,Laptops,All other,349
+2026-08-15,Bullseye,Monitors,Dalton,37
+2026-08-15,Bullseye,Monitors,HavenPoint,41
+2026-08-15,Bullseye,Monitors,Samsonic,102
+2026-08-15,Bullseye,Monitors,All other,131
+2026-08-22,Best Byte,Laptops,Dalton,432
+2026-08-22,Best Byte,Laptops,HavenPoint,584
+2026-08-22,Best Byte,Laptops,Samsonic,345
+2026-08-22,Best Byte,Laptops,All other,651
+2026-08-22,Best Byte,Monitors,Dalton,124
+2026-08-22,Best Byte,Monitors,HavenPoint,83
+2026-08-22,Best Byte,Monitors,Samsonic,204
+2026-08-22,Best Byte,Monitors,All other,253
+2026-08-22,Macro Center,Laptops,Dalton,34
+2026-08-22,Macro Center,Laptops,HavenPoint,74
+2026-08-22,Macro Center,Laptops,Samsonic,44
+2026-08-22,Macro Center,Laptops,All other,87
+2026-08-22,Macro Center,Monitors,Dalton,40
+2026-08-22,Macro Center,Monitors,HavenPoint,30
+2026-08-22,Macro Center,Monitors,Samsonic,79
+2026-08-22,Macro Center,Monitors,All other,99
+2026-08-22,ValuMart,Laptops,Dalton,298
+2026-08-22,ValuMart,Laptops,HavenPoint,628
+2026-08-22,ValuMart,Laptops,Samsonic,361
+2026-08-22,ValuMart,Laptops,All other,734
+2026-08-22,ValuMart,Monitors,Dalton,82
+2026-08-22,ValuMart,Monitors,HavenPoint,81
+2026-08-22,ValuMart,Monitors,Samsonic,217
+2026-08-22,ValuMart,Monitors,All other,249
+2026-08-22,Costwise Club,Laptops,Dalton,99
+2026-08-22,Costwise Club,Laptops,HavenPoint,115
+2026-08-22,Costwise Club,Laptops,Samsonic,69
+2026-08-22,Costwise Club,Laptops,All other,127
+2026-08-22,Costwise Club,Monitors,Dalton,39
+2026-08-22,Costwise Club,Monitors,HavenPoint,23
+2026-08-22,Costwise Club,Monitors,Samsonic,61
+2026-08-22,Costwise Club,Monitors,All other,77
+2026-08-22,Bullseye,Laptops,Dalton,73
+2026-08-22,Bullseye,Laptops,HavenPoint,166
+2026-08-22,Bullseye,Laptops,Samsonic,98
+2026-08-22,Bullseye,Laptops,All other,191
+2026-08-22,Bullseye,Monitors,Dalton,34
+2026-08-22,Bullseye,Monitors,HavenPoint,36
+2026-08-22,Bullseye,Monitors,Samsonic,98
+2026-08-22,Bullseye,Monitors,All other,118
+2026-08-29,Best Byte,Laptops,Dalton,404
+2026-08-29,Best Byte,Laptops,HavenPoint,539
+2026-08-29,Best Byte,Laptops,Samsonic,312
+2026-08-29,Best Byte,Laptops,All other,611
+2026-08-29,Best Byte,Monitors,Dalton,122
+2026-08-29,Best Byte,Monitors,HavenPoint,82
+2026-08-29,Best Byte,Monitors,Samsonic,220
+2026-08-29,Best Byte,Monitors,All other,271
+2026-08-29,Macro Center,Laptops,Dalton,32
+2026-08-29,Macro Center,Laptops,HavenPoint,74
+2026-08-29,Macro Center,Laptops,Samsonic,43
+2026-08-29,Macro Center,Laptops,All other,82
+2026-08-29,Macro Center,Monitors,Dalton,38
+2026-08-29,Macro Center,Monitors,HavenPoint,29
+2026-08-29,Macro Center,Monitors,Samsonic,74
+2026-08-29,Macro Center,Monitors,All other,91
+2026-08-29,ValuMart,Laptops,Dalton,282
+2026-08-29,ValuMart,Laptops,HavenPoint,553
+2026-08-29,ValuMart,Laptops,Samsonic,350
+2026-08-29,ValuMart,Laptops,All other,674
+2026-08-29,ValuMart,Monitors,Dalton,81
+2026-08-29,ValuMart,Monitors,HavenPoint,78
+2026-08-29,ValuMart,Monitors,Samsonic,206
+2026-08-29,ValuMart,Monitors,All other,257
+2026-08-29,Costwise Club,Laptops,Dalton,89
+2026-08-29,Costwise Club,Laptops,HavenPoint,101
+2026-08-29,Costwise Club,Laptops,Samsonic,61
+2026-08-29,Costwise Club,Laptops,All other,120
+2026-08-29,Costwise Club,Monitors,Dalton,38
+2026-08-29,Costwise Club,Monitors,HavenPoint,24
+2026-08-29,Costwise Club,Monitors,Samsonic,61
+2026-08-29,Costwise Club,Monitors,All other,74
+2026-08-29,Bullseye,Laptops,Dalton,66
+2026-08-29,Bullseye,Laptops,HavenPoint,142
+2026-08-29,Bullseye,Laptops,Samsonic,87
+2026-08-29,Bullseye,Laptops,All other,165
+2026-08-29,Bullseye,Monitors,Dalton,33
+2026-08-29,Bullseye,Monitors,HavenPoint,37
+2026-08-29,Bullseye,Monitors,Samsonic,89
+2026-08-29,Bullseye,Monitors,All other,114
+2026-09-05,Best Byte,Laptops,Dalton,542
+2026-09-05,Best Byte,Laptops,HavenPoint,670
+2026-09-05,Best Byte,Laptops,Samsonic,413
+2026-09-05,Best Byte,Laptops,All other,809
+2026-09-05,Best Byte,Monitors,Dalton,178
+2026-09-05,Best Byte,Monitors,HavenPoint,126
+2026-09-05,Best Byte,Monitors,Samsonic,312
+2026-09-05,Best Byte,Monitors,All other,397
+2026-09-05,Macro Center,Laptops,Dalton,41
+2026-09-05,Macro Center,Laptops,HavenPoint,88
+2026-09-05,Macro Center,Laptops,Samsonic,53
+2026-09-05,Macro Center,Laptops,All other,109
+2026-09-05,Macro Center,Monitors,Dalton,55
+2026-09-05,Macro Center,Monitors,HavenPoint,44
+2026-09-05,Macro Center,Monitors,Samsonic,110
+2026-09-05,Macro Center,Monitors,All other,137
+2026-09-05,ValuMart,Laptops,Dalton,370
+2026-09-05,ValuMart,Laptops,HavenPoint,783
+2026-09-05,ValuMart,Laptops,Samsonic,480
+2026-09-05,ValuMart,Laptops,All other,876
+2026-09-05,ValuMart,Monitors,Dalton,120
+2026-09-05,ValuMart,Monitors,HavenPoint,125
+2026-09-05,ValuMart,Monitors,Samsonic,305
+2026-09-05,ValuMart,Monitors,All other,372
+2026-09-05,Costwise Club,Laptops,Dalton,119
+2026-09-05,Costwise Club,Laptops,HavenPoint,139
+2026-09-05,Costwise Club,Laptops,Samsonic,79
+2026-09-05,Costwise Club,Laptops,All other,166
+2026-09-05,Costwise Club,Monitors,Dalton,56
+2026-09-05,Costwise Club,Monitors,HavenPoint,34
+2026-09-05,Costwise Club,Monitors,Samsonic,82
+2026-09-05,Costwise Club,Monitors,All other,106
+2026-09-05,Bullseye,Laptops,Dalton,93
+2026-09-05,Bullseye,Laptops,HavenPoint,215
+2026-09-05,Bullseye,Laptops,Samsonic,123
+2026-09-05,Bullseye,Laptops,All other,228
+2026-09-05,Bullseye,Monitors,Dalton,53
+2026-09-05,Bullseye,Monitors,HavenPoint,57
+2026-09-05,Bullseye,Monitors,Samsonic,147
+2026-09-05,Bullseye,Monitors,All other,182
+2026-09-12,Best Byte,Laptops,Dalton,295
+2026-09-12,Best Byte,Laptops,HavenPoint,385
+2026-09-12,Best Byte,Laptops,Samsonic,327
+2026-09-12,Best Byte,Laptops,All other,461
+2026-09-12,Best Byte,Monitors,Dalton,110
+2026-09-12,Best Byte,Monitors,HavenPoint,79
+2026-09-12,Best Byte,Monitors,Samsonic,198
+2026-09-12,Best Byte,Monitors,All other,231
+2026-09-12,Macro Center,Laptops,Dalton,22
+2026-09-12,Macro Center,Laptops,HavenPoint,48
+2026-09-12,Macro Center,Laptops,Samsonic,43
+2026-09-12,Macro Center,Laptops,All other,58
+2026-09-12,Macro Center,Monitors,Dalton,32
+2026-09-12,Macro Center,Monitors,HavenPoint,24
+2026-09-12,Macro Center,Monitors,Samsonic,62
+2026-09-12,Macro Center,Monitors,All other,78
+2026-09-12,ValuMart,Laptops,Dalton,194
+2026-09-12,ValuMart,Laptops,HavenPoint,391
+2026-09-12,ValuMart,Laptops,Samsonic,243
+2026-09-12,ValuMart,Laptops,All other,473
+2026-09-12,ValuMart,Monitors,Dalton,70
+2026-09-12,ValuMart,Monitors,HavenPoint,68
+2026-09-12,ValuMart,Monitors,Samsonic,180
+2026-09-12,ValuMart,Monitors,All other,225
+2026-09-12,Costwise Club,Laptops,Dalton,63
+2026-09-12,Costwise Club,Laptops,HavenPoint,70
+2026-09-12,Costwise Club,Laptops,Samsonic,44
+2026-09-12,Costwise Club,Laptops,All other,84
+2026-09-12,Costwise Club,Monitors,Dalton,35
+2026-09-12,Costwise Club,Monitors,HavenPoint,22
+2026-09-12,Costwise Club,Monitors,Samsonic,53
+2026-09-12,Costwise Club,Monitors,All other,66
+2026-09-12,Bullseye,Laptops,Dalton,47
+2026-09-12,Bullseye,Laptops,HavenPoint,100
+2026-09-12,Bullseye,Laptops,Samsonic,66
+2026-09-12,Bullseye,Laptops,All other,123
+2026-09-12,Bullseye,Monitors,Dalton,30
+2026-09-12,Bullseye,Monitors,HavenPoint,32
+2026-09-12,Bullseye,Monitors,Samsonic,85
+2026-09-12,Bullseye,Monitors,All other,100
+2026-09-19,Best Byte,Laptops,Dalton,256
+2026-09-19,Best Byte,Laptops,HavenPoint,336
+2026-09-19,Best Byte,Laptops,Samsonic,301
+2026-09-19,Best Byte,Laptops,All other,376
+2026-09-19,Best Byte,Monitors,Dalton,108
+2026-09-19,Best Byte,Monitors,HavenPoint,72
+2026-09-19,Best Byte,Monitors,Samsonic,192
+2026-09-19,Best Byte,Monitors,All other,233
+2026-09-19,Macro Center,Laptops,Dalton,21
+2026-09-19,Macro Center,Laptops,HavenPoint,44
+2026-09-19,Macro Center,Laptops,Samsonic,42
+2026-09-19,Macro Center,Laptops,All other,55
+2026-09-19,Macro Center,Monitors,Dalton,29
+2026-09-19,Macro Center,Monitors,HavenPoint,24
+2026-09-19,Macro Center,Monitors,Samsonic,55
+2026-09-19,Macro Center,Monitors,All other,74
+2026-09-19,ValuMart,Laptops,Dalton,174
+2026-09-19,ValuMart,Laptops,HavenPoint,368
+2026-09-19,ValuMart,Laptops,Samsonic,220
+2026-09-19,ValuMart,Laptops,All other,406
+2026-09-19,ValuMart,Monitors,Dalton,63
+2026-09-19,ValuMart,Monitors,HavenPoint,66
+2026-09-19,ValuMart,Monitors,Samsonic,160
+2026-09-19,ValuMart,Monitors,All other,204
+2026-09-19,Costwise Club,Laptops,Dalton,35
+2026-09-19,Costwise Club,Laptops,HavenPoint,71
+2026-09-19,Costwise Club,Laptops,Samsonic,40
+2026-09-19,Costwise Club,Laptops,All other,80
+2026-09-19,Costwise Club,Monitors,Dalton,32
+2026-09-19,Costwise Club,Monitors,HavenPoint,19
+2026-09-19,Costwise Club,Monitors,Samsonic,47
+2026-09-19,Costwise Club,Monitors,All other,59
+2026-09-19,Bullseye,Laptops,Dalton,42
+2026-09-19,Bullseye,Laptops,HavenPoint,90
+2026-09-19,Bullseye,Laptops,Samsonic,55
+2026-09-19,Bullseye,Laptops,All other,112
+2026-09-19,Bullseye,Monitors,Dalton,29
+2026-09-19,Bullseye,Monitors,HavenPoint,31
+2026-09-19,Bullseye,Monitors,Samsonic,80
+2026-09-19,Bullseye,Monitors,All other,104
+2026-09-26,Best Byte,Laptops,Dalton,274
+2026-09-26,Best Byte,Laptops,HavenPoint,334
+2026-09-26,Best Byte,Laptops,Samsonic,304
+2026-09-26,Best Byte,Laptops,All other,399
+2026-09-26,Best Byte,Monitors,Dalton,109
+2026-09-26,Best Byte,Monitors,HavenPoint,78
+2026-09-26,Best Byte,Monitors,Samsonic,189
+2026-09-26,Best Byte,Monitors,All other,240
+2026-09-26,Macro Center,Laptops,Dalton,22
+2026-09-26,Macro Center,Laptops,HavenPoint,48
+2026-09-26,Macro Center,Laptops,Samsonic,43
+2026-09-26,Macro Center,Laptops,All other,59
+2026-09-26,Macro Center,Monitors,Dalton,34
+2026-09-26,Macro Center,Monitors,HavenPoint,27
+2026-09-26,Macro Center,Monitors,Samsonic,66
+2026-09-26,Macro Center,Monitors,All other,83
+2026-09-26,ValuMart,Laptops,Dalton,183
+2026-09-26,ValuMart,Laptops,HavenPoint,381
+2026-09-26,ValuMart,Laptops,Samsonic,223
+2026-09-26,ValuMart,Laptops,All other,440
+2026-09-26,ValuMart,Monitors,Dalton,71
+2026-09-26,ValuMart,Monitors,HavenPoint,71
+2026-09-26,ValuMart,Monitors,Samsonic,176
+2026-09-26,ValuMart,Monitors,All other,215
+2026-09-26,Costwise Club,Laptops,Dalton,63
+2026-09-26,Costwise Club,Laptops,HavenPoint,69
+2026-09-26,Costwise Club,Laptops,Samsonic,43
+2026-09-26,Costwise Club,Laptops,All other,84
+2026-09-26,Costwise Club,Monitors,Dalton,36
+2026-09-26,Costwise Club,Monitors,HavenPoint,22
+2026-09-26,Costwise Club,Monitors,Samsonic,53
+2026-09-26,Costwise Club,Monitors,All other,67
+2026-09-26,Bullseye,Laptops,Dalton,43
+2026-09-26,Bullseye,Laptops,HavenPoint,91
+2026-09-26,Bullseye,Laptops,Samsonic,56
+2026-09-26,Bullseye,Laptops,All other,112
+2026-09-26,Bullseye,Monitors,Dalton,33
+2026-09-26,Bullseye,Monitors,HavenPoint,36
+2026-09-26,Bullseye,Monitors,Samsonic,93
+2026-09-26,Bullseye,Monitors,All other,113
+2026-10-03,Best Byte,Laptops,Dalton,282
+2026-10-03,Best Byte,Laptops,HavenPoint,343
+2026-10-03,Best Byte,Laptops,Samsonic,328
+2026-10-03,Best Byte,Laptops,All other,407
+2026-10-03,Best Byte,Monitors,Dalton,111
+2026-10-03,Best Byte,Monitors,HavenPoint,79
+2026-10-03,Best Byte,Monitors,Samsonic,199
+2026-10-03,Best Byte,Monitors,All other,229
+2026-10-03,Macro Center,Laptops,Dalton,21
+2026-10-03,Macro Center,Laptops,HavenPoint,48
+2026-10-03,Macro Center,Laptops,Samsonic,41
+2026-10-03,Macro Center,Laptops,All other,54
+2026-10-03,Macro Center,Monitors,Dalton,32
+2026-10-03,Macro Center,Monitors,HavenPoint,24
+2026-10-03,Macro Center,Monitors,Samsonic,61
+2026-10-03,Macro Center,Monitors,All other,78
+2026-10-03,ValuMart,Laptops,Dalton,174
+2026-10-03,ValuMart,Laptops,HavenPoint,360
+2026-10-03,ValuMart,Laptops,Samsonic,221
+2026-10-03,ValuMart,Laptops,All other,394
+2026-10-03,ValuMart,Monitors,Dalton,70
+2026-10-03,ValuMart,Monitors,HavenPoint,72
+2026-10-03,ValuMart,Monitors,Samsonic,176
+2026-10-03,ValuMart,Monitors,All other,216
+2026-10-03,Costwise Club,Laptops,Dalton,57
+2026-10-03,Costwise Club,Laptops,HavenPoint,65
+2026-10-03,Costwise Club,Laptops,Samsonic,41
+2026-10-03,Costwise Club,Laptops,All other,76
+2026-10-03,Costwise Club,Monitors,Dalton,34
+2026-10-03,Costwise Club,Monitors,HavenPoint,21
+2026-10-03,Costwise Club,Monitors,Samsonic,52
+2026-10-03,Costwise Club,Monitors,All other,67
+2026-10-03,Bullseye,Laptops,Dalton,47
+2026-10-03,Bullseye,Laptops,HavenPoint,104
+2026-10-03,Bullseye,Laptops,Samsonic,64
+2026-10-03,Bullseye,Laptops,All other,121
+2026-10-03,Bullseye,Monitors,Dalton,30
+2026-10-03,Bullseye,Monitors,HavenPoint,34
+2026-10-03,Bullseye,Monitors,Samsonic,83
+2026-10-03,Bullseye,Monitors,All other,107
