@@ -72,7 +72,7 @@ course kit, not an account.
   The person may be behind a placeholder themself, so assume nothing about
   who any placeholder is, and keep their name out of what you write except
   their own sign-off. Give a placeholder's task as its own line
-  ("[PERSON-01]: the allocation ask, due Nov 4"), never as an instruction
+  ("[PERSON-01]: the allocation ask, due Nov 10"), never as an instruction
   to deal with them ("follow up with [PERSON-01]"). Never write I, my, we
   or us for something the material says a placeholder did ("my visit" for
   [PERSON-03]'s visit): name the placeholder.

@@ -12,8 +12,8 @@ a real inbox or phone.
 
 You are **Taylor Brooks**, an account manager at **Halcrest Retail Partners**,
 an agency that places and supports **Dalton Computers** products in retail
-stores. It is Monday, November 2, 2026. Thursday is Dalton's Q3 business
-review.
+stores. The inbox is from Monday, November 2, 2026. Dalton's Q3 business
+review is Thursday, November 12.
 
 | Retailers | Brands |
 | --- | --- |
@@ -29,7 +29,7 @@ review.
 | `sales/promo-calendar-q4-2026.csv` | The retailers' holiday promotion calendar. |
 | `crm/opportunities-export-2026-11-02.csv` | A CRM opportunity export: 42 retail programs in the pipeline, **with contact names, emails and phone numbers in it.** |
 | `field-notes/` | Store visit notes from the field sales managers. Some contain things that should not leave the team. |
-| `client/` | The client's brief for Thursday's deck, and Dalton's brand guide. |
+| `client/` | The client's brief for the November 12 deck, and Dalton's brand guide. |
 | `redact-practice/` | A launch deck, a memo, a workbook and an email about **Project Kestrel**, an unreleased Dalton laptop under NDA, for practicing Redact & Restore on real file types (exercise 6). |
 
 ## The exercises

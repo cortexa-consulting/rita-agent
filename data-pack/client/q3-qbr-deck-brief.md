@@ -1,7 +1,7 @@
 # Dalton Computers: Q3 QBR deck brief
 
 From: Rachel Kim, Brand Manager, Retail Channel
-For: Thursday, November 5, 2026, 2:00pm CT. Audience: Dalton VP of Retail Sales.
+For: Thursday, November 12, 2026, 2:00pm CT. Audience: Dalton VP of Retail Sales.
 
 ## What the VP needs to walk out knowing
 1. How Q3 finished, by retailer and by product line, in units and dollars.
