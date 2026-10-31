@@ -17,15 +17,22 @@ other account, so Claude can pick it up from the files next time.
    the team does for them; the retailers or channels; who's who, by role;
    how they like to receive work; anything confidential about the
    account; and whether its files are mostly yellow (internal or client
-   data that needs redacting before it comes in). Ask only for what's
-   missing, in one short list, and wait. If the request covers it, build
-   now.
+   data that needs redacting before it comes in). If anything's missing,
+   interview for it: one question at a time, wait for each answer, and ask
+   only what you need (usually three or four). If the request covers it,
+   build now.
 3. **Keep the files clean.** No personal phone numbers or emails (roles and
    names are fine; contact details stay in the CRM), no pricing, no client
    figures, and nothing confidential: write "Confidential: [what kind], kept
    out of these files" instead. A product under NDA is "an NDA product, code
    name <X>" or nothing: no year, category or specs.
-4. **Build from the request and the account's own files.** Don't copy in
+4. **One home per fact.** `brief.md` holds this account and nothing
+   else. The work rules stay in the standing brief, the person's writing
+   style in `about-me/writing-rules.md`, the brand guide in `reference/`:
+   point to them, don't copy them in, and let `brief.md` point to
+   `reference/`, never the other way. Keep `brief.md` and `memory.md` under
+   a page each.
+5. **Build from the request and the account's own files.** Don't copy in
    facts from emails, field notes or data files; the account's work will
    read those when it needs them. Never fill a field with a guess (who owns
    something, who's involved, what the person wants): anything neither the
@@ -75,7 +82,8 @@ nothing in the account's own files changes.
 ## When you're done
 
 List every folder and file you made. Then suggest a project for it: the
-project's folder is the person's whole workspace, and its instructions are
+project's folder is the person's whole workspace (linked under Context →
+Link local folder, never uploaded), and its instructions are
 "This project is <Account>. At the start of every session, read
 projects/<account>/brief.md and memory.md. Save finished work to
 outputs/<account>/." For an engagement, name the engagement and add its

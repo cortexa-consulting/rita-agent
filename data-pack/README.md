@@ -25,7 +25,7 @@ review is Thursday, November 12.
 | --- | --- |
 | `inbox/` | 18 emails from Monday morning (`.eml` files): the client, retailers, your field team, your manager, IT, and a few you should not trust. |
 | `sales/dalton-sell-through-q3-2026.csv` | Dalton's weekly sell-through for Q3 (13 weeks ending Oct 3): retailer × region × product, units, dollars, price, inventory, promotions. **It has problems. Find them before you trust it.** |
-| `sales/category-share-by-brand-q3-2026.csv` | A retail panel: weekly laptop and monitor units for Dalton and its competitors, by retailer. Use it for market share. |
+| `sales/category-share-by-brand-q3-2026.csv` | A retail panel: weekly laptop and monitor units for Dalton and its competitors, by retailer. Use it for market share. **Licensed data.** Halcrest's (fictional) license lets the team use it in Dalton's own reports and decks, footnoted "Retail panel data, licensed". It may not go to any other client, be shared outside Halcrest and Dalton, or be uploaded anywhere else. |
 | `sales/promo-calendar-q4-2026.csv` | The retailers' holiday promotion calendar. |
 | `crm/opportunities-export-2026-11-02.csv` | A CRM opportunity export: 42 retail programs in the pipeline, **with contact names, emails and phone numbers in it.** |
 | `field-notes/` | Store visit notes from the field sales managers. Some contain things that should not leave the team. |
@@ -75,10 +75,11 @@ that lists the data problems found and how each was handled.
 Read projects/rita-agent/skills/client-deck/SKILL.md and everything in
 projects/rita-agent/data-pack/client/. Build the 6-to-8-slide Q3 business review
 deck Rachel asked for from the workbook you just built. For market share, use
-projects/rita-agent/data-pack/sales/category-share-by-brand-q3-2026.csv.
-Put the answer on slide 2, make every headline a full sentence, cite the
-source file on every number, and add speaker notes. Save it as
-outputs/dalton/q3-qbr.pptx.
+projects/rita-agent/data-pack/sales/category-share-by-brand-q3-2026.csv,
+but it's licensed panel data: check what data-pack/README.md says its
+license allows before its numbers go on a slide. Put the answer on slide 2,
+make every headline a full sentence, source every number, and add speaker
+notes. Save it as outputs/dalton/q3-qbr.pptx.
 ```
 
 Then run the summary test, the way a client's AI summarizer would:
@@ -147,7 +148,7 @@ back), and type these lists in "Names and words to hide":
 | --- | --- |
 | Companies | `Dalton Computers`, `Best Byte`, `ValuMart`, `Halcrest Retail Partners` |
 | People | `Rachel Kim`, `Tessa Monroe`, `Taylor Brooks` |
-| Products and code names | `Project Kestrel \| Kestrel` (the bar adds the short name as an alias) |
+| Products & code names | `Project Kestrel \| Kestrel` (the bar adds the short name as an alias) |
 
 Then open each file in `rita-agent/data-pack/redact-practice/` in turn and
 click **Redact**:
@@ -163,11 +164,13 @@ click **Redact**:
 
 Each time, look at **Names that may still be in**. The lists above leave out
 two people on purpose, and the client's short name, "Dalton", appears on its
-own. Add each real name to the right list (it redacts again for you),
+own. "Aero" (the Aero 14) is a laptop already on shelves: dismiss it. Add each real name to the right list (it redacts again for you),
 dismiss the rest, and read the redacted text before you save anything. To
 practice the round trip, attach the redacted deck to a new chat, ask Claude
-for a one-slide summary of it as a `.pptx`, and drop that file on
-**Restore** with your key. Save the key again afterward: next time, these
+for a one-slide summary of it as a `.pptx` for the sales team (say they are
+under the same NDA, so the slide is marked Confidential until Jan 12, and
+that the hidden backup slide stays out), and drop that file on **Restore**
+with your key. The redacted deck's file name is redacted too. Save the key again afterward: next time, these
 lists come back on their own.
 
 ## For instructors

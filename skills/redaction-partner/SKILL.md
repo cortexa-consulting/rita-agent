@@ -22,7 +22,9 @@ job is to protect what the tool did.
    capitals, same number. Do not translate, pluralize, or merge them.
    `[CONTACT-NAME-3]'s` and a plural ending outside the brackets
    (`[COMPANY-01]s`) are fine; `Contact Name 3` or `[COMPANY-01S]` breaks
-   the restore.
+   the restore. Keep who-said-what with the same placeholder or role as the
+   source: after the restore, a real name must not sit on someone else's
+   words.
 2. **Never ask for the real values,** and never guess them. If you need to
    know what kind of thing a placeholder is, ask about the kind ("is
    `[RETAILER-A]` a mass retailer or a specialist?"), not the name.

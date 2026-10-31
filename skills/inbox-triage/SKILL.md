@@ -39,9 +39,9 @@ why you chose this one.
    into other files.
 5. **Name the deadline.** For every Urgent item, state the deadline as
    weekday and date (check they match) and who is waiting. Count "inside
-   48 hours" from the newest email's date, and if an email's own deadline
-   is just past 48 hours but missing it costs a placement or a client
-   deliverable, call it Urgent and say why. An email with no deadline of
+   48 hours" from the newest email's date. A dated client deliverable or a
+   placement deadline is Urgent however far out, because the work starts
+   now; say why. An email with no deadline of
    its own is Urgent only when waiting costs sales or a placement (a
    product out of stock now, not an event days away); a question that
    merely relates to urgent work is Needs reply.
@@ -51,6 +51,8 @@ why you chose this one.
 A file `outputs/inbox-triage/triage-<date>.md` (same `outputs` folder) with:
 
 1. **Top three things to do today**, each with the deadline and the person waiting.
+   Rank by deadline, nearest first; a deadline your manager set counts the
+   same as a client's.
 2. The four piles as tables: sender, subject, one-line summary, suggested action.
 3. A list of the draft replies written, with their file paths.
 4. **Watch-outs:** suspicious messages (and why), confidentiality labels, and
@@ -86,7 +88,9 @@ it.
   `projects/dalton/`), and use its `brief.md` and `memory.md` for who's who
   and what's already promised or decided.
 - **Files** go where the rules above say, in the `outputs` folder at the top
-  of the workspace, unless the person names a place.
+  of the workspace, unless the person names a place. In an account's
+  project, or when every email is for one account, use
+  `outputs/<account>/` (drafts in its `drafts/`) instead.
 - **Offer memory lines.** When you deliver, offer a line for each account's
   `memory.md` where an email changed a deadline or a decision. Write them
   only on a yes, and keep client figures (any number from the data, returns included),

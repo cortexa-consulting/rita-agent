@@ -20,5 +20,13 @@
 - The move came from [where], driven by [cause, evidence].
 - We recommend [action] by [date].
 
+**The ask:** [who] decides [what] by [date].
+
+## Page 1 numbers and chart
+- Numbers: [brand]'s change in points where it moved; the main gainer's
+  change; the comparison retailers' change (before → after under each).
+- Chart: change in share, in points, by retailer, one bar per brand; the
+  retailers where it moved first and shaded.
+
 ## Watch-outs
 Denominator, panel coverage, weeks compared, data issues found.

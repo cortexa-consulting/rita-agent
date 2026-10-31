@@ -20,5 +20,13 @@
 - [Competitor] is [undercutting / matching] us on [product] at [retailer].
 - For [next event], we recommend [action].
 
+**The ask:** [who] decides [what] by [date].
+
+## Page 1 numbers and chart
+- Numbers: the lift in units; the discount depth; the price gap to the
+  nearest competitor.
+- Chart: weekly units around the promotion, promotion weeks shaded and the
+  baseline marked, so the lift (and any dip after) is visible.
+
 ## Watch-outs
 Lift is not profit. A promo that pulls sales forward shows a dip after it.

@@ -7,7 +7,7 @@
 - Cloud #F4F6F8: backgrounds
 
 ## Type
-- Headlines: a clean sans serif, bold (Calibri or Arial if nothing else is installed)
+- Headlines: a clean sans serif, bold (Avenir Next LT Pro, or Arial if nothing else is installed; never Calibri)
 - Body: the same family, regular, no smaller than 14pt on slides
 
 ## Voice

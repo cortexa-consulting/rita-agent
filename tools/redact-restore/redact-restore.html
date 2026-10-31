@@ -9,7 +9,7 @@
      cannot stop a browser extension or browser translation; see README.) The two hashes
      pin the page's own style and script; run update-csp.mjs after editing
      either. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-rx6B30DX9K12SAQZRfF9jNCgC2c+T/U1/bwMjbm54h0='; style-src 'sha256-xJiYH2FX+btoCC9LZkDctruAGkT+f4J6jocxJ4XYQe0='; connect-src 'none'; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-U5ZQDFDpnwE6X5w656ymPVRBn9FXgKjAPMcU4MXKgWI='; style-src 'sha256-gGy+7TXM9L+xZylAnm/NBS9tMoaPKriefZOnqAQJs1w='; connect-src 'none'; form-action 'none'; base-uri 'none'">
 <meta name="referrer" content="no-referrer">
 <!-- Browser translation would send the page, originals included, to a
      translation service: the one channel the policy above cannot close. -->
@@ -131,13 +131,13 @@ textarea { background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 
   textarea:hover:not(:focus-visible) { border-color: color-mix(in srgb, var(--strong) 80%, transparent); }
 }
 textarea.terms { min-height: 6rem; }
-.list-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr)); gap: 0 20px; }
+.list-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr)); gap: 0 16px; }
 /* Each list fills its grid row, and its field sits at the bottom, so the
    fields in a row line up even when one label wraps to two lines. */
 .list-grid > div { min-width: 0; display: flex; flex-direction: column; }
 .list-grid > div > textarea { margin-top: auto; }
 .list-grid label { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 8px; row-gap: 2px; margin: 18px 0 8px; }
-.list-grid label .hint { font-size: 0.8125rem; white-space: nowrap; }
+.list-grid label .hint { font-size: 0.75rem; white-space: nowrap; }
 /* While you type in a field, its label turns jade, as on the site. */
 label:has(+ textarea) { transition: color var(--fast) var(--ease); }
 label:has(+ textarea:focus) { color: var(--strong); }
@@ -282,6 +282,73 @@ html[data-theme-vt="circle"]::view-transition { pointer-events: none; }
   .hero::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, transparent 0%, color-mix(in srgb, var(--bg) 55%, transparent) 60%, var(--bg) 100%); }
   .hero-copy { z-index: 1; }
 }
+
+/* ---- Layout: one client bar, two tabs, numbered steps inside each ---- */
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+/* The client bar: whose key is open, and the way to start fresh. */
+.client-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 18px; margin-top: 8px; padding: 16px 20px; background: var(--card-face); border: 1px solid var(--card-edge); border-radius: var(--r-lg); box-shadow: var(--card-shadow); }
+.client-icon { width: 28px; height: 28px; flex: none; fill: none; stroke: var(--strong); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.client-id { flex: 1 1 14rem; min-width: 0; }
+.client-id p { margin: 0; }
+.client-label { color: var(--muted); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
+.client-name { font-weight: 700; overflow-wrap: anywhere; }
+.client-name:empty::before { content: "None open. A new client? Skip this and start below."; color: var(--muted); font-weight: 500; }
+.client-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.client-actions .file-btn { margin: 0; }
+.client-hint { margin: 10px 4px 0; }
+/* Start over forgets things, so it wears the warning colors, never the quiet face. */
+button.danger { background: var(--warn-bg); color: var(--warn-fg); border-color: color-mix(in srgb, var(--warn-fg) 55%, transparent); }
+button.danger svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+button.danger::before { background: radial-gradient(120% 90% at 50% 0%, color-mix(in srgb, var(--warn-fg) 18%, transparent), transparent 70%); }
+@media (hover: hover) { button.danger:not(:disabled):hover { border-color: var(--warn-fg); box-shadow: 0 0 0 3px color-mix(in srgb, var(--warn-fg) 18%, transparent); } }
+button.danger.armed { border-color: var(--warn-fg); box-shadow: 0 0 0 3px color-mix(in srgb, var(--warn-fg) 28%, transparent); }
+/* Two tabs: Redact before Claude, Restore after. */
+.tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 28px; }
+.tabs [role="tab"] { justify-content: flex-start; gap: 14px; min-height: 64px; padding: 10px 20px; border-radius: var(--r-lg); text-align: left; }
+.tab-text { display: flex; flex-direction: column; line-height: 1.25; }
+.tab-title { font-size: 1.125rem; font-weight: 800; letter-spacing: -0.01em; }
+.tab-sub { color: var(--muted); font-size: 0.8125rem; font-weight: 500; }
+.tabs [role="tab"][aria-selected="true"] { border-color: var(--strong); box-shadow: 0 0 0 1px var(--strong), var(--quiet-shadow); background: linear-gradient(180deg, var(--wash-strong), var(--wash)); }
+.tabs [role="tab"][aria-selected="true"] .num { background: var(--jade); border-color: var(--jade); color: var(--ink); }
+section[role="tabpanel"] { margin-top: 12px; }
+section h2 { font-size: 1.375rem; margin-bottom: 4px; }
+/* Numbered steps inside a tab, one after another. */
+.substep { margin-top: 24px; padding-top: 22px; border-top: 1px solid var(--hairline); }
+.substep > h3 { display: flex; align-items: center; gap: 12px; margin: 0 0 4px; font-size: 1.125rem; }
+.num { display: inline-flex; align-items: center; justify-content: center; flex: none; width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid var(--strong); color: var(--strong); font-size: 0.875rem; font-weight: 800; }
+textarea.paste { min-height: 6rem; }
+/* Optional settings fold away, with what they hold said in the summary. */
+details.more { margin-top: 16px; border: 1px solid var(--card-edge); border-radius: var(--r-md); padding: 0 18px; }
+details.more > summary { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; min-height: 48px; padding: 12px 0 12px 22px; position: relative; cursor: pointer; font-weight: 700; list-style: none; }
+details.more > summary::-webkit-details-marker { display: none; }
+details.more > summary::before { content: ""; position: absolute; left: 2px; top: 19px; width: 7px; height: 7px; border-right: 2px solid var(--strong); border-bottom: 2px solid var(--strong); transform: rotate(-45deg); transition: transform var(--fast) var(--ease); }
+details.more[open] > summary::before { transform: rotate(45deg); }
+details.more[open] { padding-bottom: 14px; }
+details.more fieldset { border: 0; padding: 0; margin: 0; }
+details.more table { margin-top: 0; }
+fieldset.lists { border: 0; padding: 0; margin: 0; }
+/* An opened file shows on its box: its name in jade with a check, on a lit, solid rim. */
+.dz-file { font-weight: 700; font-size: 1.0625rem; color: var(--strong); overflow-wrap: anywhere; text-align: center; }
+.dz-file:empty { display: none; }
+.dz-file::before { content: "\2713  "; }
+.dropzone.has-file { border-style: solid; border-color: var(--strong); background: radial-gradient(120% 100% at 50% 0%, var(--wash-strong), transparent 75%); }
+@media (prefers-reduced-motion: no-preference) { .dropzone.has-file { animation: opened 700ms var(--ease); } }
+@keyframes opened { from { box-shadow: 0 0 0 8px color-mix(in srgb, var(--jade) 35%, transparent); } }
+.dz-again, .has-file .dz-idle, section.drop-target .dz-again { display: none; }
+.has-file .dz-again { display: inline; }
+.client-bar:has(#key-file-name:not(:empty)) { border-color: var(--strong); }
+.saved { color: var(--strong); }
+.saved p { margin: 4px 0 0; }
+.saved p::before { content: "\2713  "; }
+/* The answer's drop box looks different from the file's: a solid rim and a down arrow. */
+.dropzone.answer { border-style: solid; border-width: 1.5px; }
+.next { margin: 22px 0 0; padding: 14px 18px; border-radius: var(--r-md); background: var(--wash); font-weight: 600; }
+button.link { display: inline; min-height: 0; padding: 0; border: 0; background: none; box-shadow: none; color: var(--strong); font: inherit; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; overflow: visible; }
+button.link::before { display: none; }
+@media (max-width: 40rem) {
+  .tabs [role="tab"] { padding: 10px 14px; gap: 10px; }
+  .tab-sub { display: none; }
+}
 </style>
 </head>
 <body>
@@ -307,28 +374,46 @@ html[data-theme-vt="circle"]::view-transition { pointer-events: none; }
 </div>
 <main>
 
-  <section id="redact-sec" aria-labelledby="redact-h">
-    <p class="eyebrow step">Step 1</p>
-    <h2 id="redact-h">Redact</h2>
-    <p class="hint">Bring in the document to redact: drop it, choose it, or paste its text. Nothing leaves this page.</p>
+  <div class="client-bar" id="client-bar">
+    <svg class="client-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M17 6l3 3M14 9l2 2"/></svg>
+    <div class="client-id">
+      <p class="client-label">Client key</p>
+      <p id="key-file-name" class="client-name"></p>
+      <p id="key-status" class="hint" role="status" aria-live="polite"></p>
+    </div>
+    <div class="client-actions">
+      <input class="file-input" type="file" id="key-file" accept=".json,application/json">
+      <label class="file-btn" for="key-file">Open a client key</label>
+      <button type="button" id="btn-clear" class="danger"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 12a8 8 0 1 0 2.3-5.6"/><path d="M4 4v5h5"/></svg><span id="btn-clear-label">Start over</span></button>
+    </div>
+  </div>
+  <p class="hint client-hint">A client you've done before? Open their key first: it brings back their lists. <strong>Start over</strong> forgets the key and the lists, ready for the next client.</p>
 
+  <div class="tabs" role="tablist" aria-label="Redact or restore">
+    <button type="button" role="tab" id="tab-redact" aria-controls="redact-sec" aria-selected="true"><span class="num" aria-hidden="true">1</span><span class="tab-text"><span class="tab-title">Redact</span><span class="tab-sub">Before Claude sees it</span></span></button>
+    <button type="button" role="tab" id="tab-restore" aria-controls="restore-sec" aria-selected="false" tabindex="-1"><span class="num" aria-hidden="true">2</span><span class="tab-text"><span class="tab-title">Restore</span><span class="tab-sub">After Claude answers</span></span></button>
+  </div>
+
+  <section id="redact-sec" role="tabpanel" aria-labelledby="tab-redact">
+    <h2 id="redact-h">Redact a file before Claude sees it</h2>
+
+    <div class="substep">
+      <h3><span class="num" aria-hidden="true">1</span>Bring in the file</h3>
     <div class="dropzone" id="in-drop">
       <svg class="dz-icon" viewBox="0 0 48 48" aria-hidden="true" focusable="false"><path d="M24 31V9M15 18l9-9 9 9"/><path d="M8 29v7a4 4 0 0 0 4 4h24a4 4 0 0 0 4-4v-7"/></svg>
-      <p class="dz-title"><span class="dz-idle">Drag and drop a file here</span><span class="dz-drop">Drop it to open it</span></p>
+      <p id="in-file-name" class="dz-file"></p>
+      <p class="dz-title"><span class="dz-idle">Drag and drop a file here</span><span class="dz-again">Drop another file to replace it</span><span class="dz-drop">Drop it to open it</span></p>
       <p class="dz-or">or</p>
       <input class="file-input" type="file" id="in-file" accept=".pptx,.docx,.xlsx,.potx,.ppsx,.dotx,.xltx,.txt,.csv,.md,.eml,.json,text/plain,text/csv">
       <label class="file-btn" for="in-file">Choose a file</label>
       <p class="hint" id="in-types">PowerPoint, Word or Excel files, or .txt, .csv, .md and .eml text</p>
-      <p id="in-file-name" class="hint"></p>
     </div>
-    <label class="check pdf-opt"><input type="checkbox" id="opt-pdf"> <span>Read PDF files <span class="hint">(text only: you get redacted text back, not a PDF. Curious how? The PdfReader section of this file explains it.)</span></span></label>
-    <div id="in-warn" class="warn hidden" role="alert"></div>
-
-    <div id="text-input">
-      <label for="in-text">Or paste your text</label>
-      <textarea id="in-text" spellcheck="false" placeholder="Paste an email, notes, or a CSV export here"></textarea>
-    </div>
-
+    <label class="check pdf-opt"><input type="checkbox" id="opt-pdf"> <span>Read PDF files <span class="hint">(text only: you get redacted text back, not a PDF. How it works is in the README beside this file.)</span></span></label>
+      <div id="in-warn" class="warn hidden" role="alert"></div>
+      <div id="text-input">
+        <label for="in-text">Or paste text instead</label>
+        <textarea id="in-text" class="paste" spellcheck="false" placeholder="Paste an email, notes, or a CSV export here"></textarea>
+      </div>
     <div id="office-panel" class="office hidden">
       <div class="office-head">
         <svg class="office-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/><path d="M10 13h6M10 17h6"/></svg>
@@ -340,30 +425,6 @@ html[data-theme-vt="circle"]::view-transition { pointer-events: none; }
       <label class="check"><input type="checkbox" id="opt-identity" checked> Remove the names saved inside the file <span class="hint">(author, last editor, company, comment authors)</span></label>
       <div id="office-sheets"></div>
     </div>
-
-    <fieldset class="lists">
-      <legend>Names and words to hide</legend>
-      <p class="hint">One per line. Each list numbers its own placeholders, so a product under NDA becomes [PRODUCT-01], the next [PRODUCT-02], and so on. Other names for the same thing, such as a nickname or initials, go after a bar: <code>Rachel Kim | Rach | RK</code>. Any line can carry its own label instead: <code>Best Byte =&gt; RETAILER-A</code>.</p>
-      <div class="list-grid">
-        <div><label for="list-company">Companies<span class="hint">[COMPANY-01]</span></label><textarea id="list-company" class="terms" spellcheck="false" placeholder="Clients, retailers, competitors"></textarea></div>
-        <div><label for="list-person">People<span class="hint">[PERSON-01]</span></label><textarea id="list-person" class="terms" spellcheck="false" placeholder="Buyers, contacts, colleagues"></textarea></div>
-        <div><label for="list-product">Products and code names<span class="hint">[PRODUCT-01]</span></label><textarea id="list-product" class="terms" spellcheck="false" placeholder="Anything under NDA: unreleased products, prototypes, code names"></textarea></div>
-        <div><label for="list-project">Projects and topics<span class="hint">[PROJECT-01]</span></label><textarea id="list-project" class="terms" spellcheck="false" placeholder="Campaigns, programs, deal names"></textarea></div>
-        <div><label for="list-tool">Tools and systems<span class="hint">[TOOL-01]</span></label><textarea id="list-tool" class="terms" spellcheck="false" placeholder="Internal tools, platforms, portals"></textarea></div>
-        <div><label for="terms">Anything else<span class="hint">[TERM-1]</span></label><textarea id="terms" class="terms" spellcheck="false" placeholder="Store numbers, addresses, anything that doesn't fit a list"></textarea></div>
-      </div>
-    </fieldset>
-
-    <fieldset>
-      <legend>Also find these automatically</legend>
-      <label class="check"><input type="checkbox" id="opt-email" checked> Email addresses</label>
-      <label class="check"><input type="checkbox" id="opt-phone" checked> Phone numbers</label>
-      <label class="check"><input type="checkbox" id="opt-ssn" checked> Social Security numbers</label>
-      <label class="check"><input type="checkbox" id="opt-card" checked> Payment card numbers</label>
-      <label class="check"><input type="checkbox" id="opt-money"> Money amounts <span class="hint">(leave off if the AI needs the numbers to analyze)</span></label>
-      <label class="check"><input type="checkbox" id="opt-url"> Web links <span class="hint">(internal links often name a client or a project)</span></label>
-    </fieldset>
-
     <div id="csv-panel" class="hidden">
       <fieldset>
         <legend>This looks like a spreadsheet. Choose what each column needs.</legend>
@@ -371,72 +432,120 @@ html[data-theme-vt="circle"]::view-transition { pointer-events: none; }
         <div id="csv-cols" class="cols"></div>
       </fieldset>
     </div>
-
-    <div class="row">
-      <button type="button" class="primary" id="btn-redact">Redact</button>
-      <button type="button" id="btn-clear">Start over</button>
     </div>
-    <p class="status" id="redact-status" role="status" aria-live="polite"></p>
 
-    <div id="redact-out" class="hidden">
-      <label for="out-text">Redacted text <span class="hint">(read it before you paste it)</span></label>
-      <textarea id="out-text" spellcheck="false" readonly></textarea>
+    <div class="substep">
+      <h3><span class="num" aria-hidden="true">2</span>Tell it what to hide</h3>
+      <fieldset class="lists">
+        <legend class="sr-only">Names and words to hide</legend>
+        <p class="hint">One per line. Each list numbers its own placeholders, so a product under NDA becomes [PRODUCT-01], the next [PRODUCT-02], and so on. Other names for the same thing, such as a nickname or initials, go after a bar: <code>Rachel Kim | Rach | RK</code>. Any line can carry its own label instead: <code>Best Byte =&gt; RETAILER-A</code>.</p>
+        <div class="list-grid">
+        <div><label for="list-company">Companies<span class="hint">[COMPANY-01]</span></label><textarea id="list-company" class="terms" spellcheck="false" placeholder="Clients, retailers, competitors"></textarea></div>
+        <div><label for="list-person">People<span class="hint">[PERSON-01]</span></label><textarea id="list-person" class="terms" spellcheck="false" placeholder="Buyers, contacts, colleagues"></textarea></div>
+        <div><label for="list-product">Products &amp; code names<span class="hint">[PRODUCT-01]</span></label><textarea id="list-product" class="terms" spellcheck="false" placeholder="Anything under NDA: unreleased products, prototypes, code names"></textarea></div>
+        </div>
+        <details id="more-lists" class="more">
+          <summary>More lists <span class="hint">Projects, tools, anything else</span></summary>
+          <div class="list-grid">
+        <div><label for="list-project">Projects and topics<span class="hint">[PROJECT-01]</span></label><textarea id="list-project" class="terms" spellcheck="false" placeholder="Campaigns, programs, deal names"></textarea></div>
+        <div><label for="list-tool">Tools and systems<span class="hint">[TOOL-01]</span></label><textarea id="list-tool" class="terms" spellcheck="false" placeholder="Internal tools, platforms, portals"></textarea></div>
+        <div><label for="terms">Anything else<span class="hint">[TERM-1]</span></label><textarea id="terms" class="terms" spellcheck="false" placeholder="Store numbers, addresses, anything that doesn't fit a list"></textarea></div>
+          </div>
+        </details>
+      </fieldset>
+      <details id="auto-finds" class="more">
+        <summary>Also found automatically: <span id="auto-summary" class="hint"></span></summary>
+        <fieldset>
+          <legend class="sr-only">Also find these automatically</legend>
+          <label class="check"><input type="checkbox" id="opt-email" checked> Email addresses</label>
+          <label class="check"><input type="checkbox" id="opt-phone" checked> Phone numbers</label>
+          <label class="check"><input type="checkbox" id="opt-ssn" checked> Social Security numbers</label>
+          <label class="check"><input type="checkbox" id="opt-card" checked> Payment card numbers</label>
+          <label class="check"><input type="checkbox" id="opt-money"> Money amounts <span class="hint">(leave off if the AI needs the numbers to analyze)</span></label>
+          <label class="check"><input type="checkbox" id="opt-url"> Web links <span class="hint">(internal links often name a client or a project)</span></label>
+        </fieldset>
+      </details>
+    </div>
+
+    <div class="substep">
+      <h3><span class="num" aria-hidden="true">3</span>Redact</h3>
       <div class="row">
-        <button type="button" class="primary" id="btn-copy-out">Copy redacted text</button>
-        <button type="button" id="btn-save-out">Save redacted file</button>
-        <button type="button" id="btn-save-key">Save the key file</button>
+        <button type="button" class="primary" id="btn-redact">Redact</button>
       </div>
-      <div class="warn" role="note">
-        <strong>The key file undoes the redaction.</strong> Keep it on your computer. Never paste it, upload it, or attach it to an AI chat.
-      </div>
-      <div id="suggest" class="suggest hidden">
+      <p class="status" id="redact-status" role="status" aria-live="polite"></p>
+    </div>
+
+    <div id="redact-out" class="substep hidden">
+      <h3><span class="num" aria-hidden="true">4</span>Check it, then save</h3>
+        <div id="suggest" class="suggest hidden">
         <h3>Names that may still be in</h3>
         <p class="hint">The tool saw these capitalized words and didn't hide them. Add the ones that are names, and it redacts again; the rest are fine to leave.</p>
         <ul id="suggest-rows" class="suggest-rows"></ul>
         <p id="suggest-more" class="hint"></p>
         <div class="row"><button type="button" id="suggest-dismiss">Dismiss all</button></div>
       </div>
-      <h3>What was replaced</h3>
-      <table>
+      <p id="suggest-none" class="hint hidden" role="status"><strong>No names left that look like names.</strong> Still read the redacted text before you paste it.</p>
+      <label for="out-text">Redacted text <span class="hint">(read it before you use it)</span></label>
+      <textarea id="out-text" spellcheck="false" readonly></textarea>
+      <div class="row">
+        <button type="button" class="primary" id="btn-copy-out">Copy redacted text</button>
+        <button type="button" id="btn-save-out">Save redacted file</button>
+        <button type="button" id="btn-save-key">Save the key file</button>
+      </div>
+      <div class="status saved" id="out-saved" role="status" aria-live="polite"></div>
+      <div class="warn" role="note">
+        <strong>The key file undoes the redaction.</strong> Keep it on your computer. Never paste it, upload it, or attach it to an AI chat.
+      </div>
+      <details id="replaced" class="more">
+        <summary>What was replaced <span id="replaced-count" class="hint"></span></summary>
+        <table>
         <thead><tr><th scope="col">Placeholder</th><th scope="col">Kind</th><th scope="col">Original</th></tr></thead>
         <tbody id="key-rows"></tbody>
       </table>
+      </details>
+      <p class="next">Next: take the redacted copy to Claude. When the answer is ready, come back to <button type="button" class="link" id="go-restore">Restore</button>.</p>
     </div>
   </section>
 
-  <section id="restore-sec" aria-labelledby="restore-h">
-    <p class="eyebrow step">Step 2</p>
-    <h2 id="restore-h">Restore</h2>
-    <p class="hint">Paste the AI's answer. Placeholders like [COMPANY-01] are swapped back using the key from step 1. Closed the tab? Bring back the key file you saved: it also brings back that client's lists and column choices for the next redaction.</p>
-    <div class="dropzone small" id="key-drop">
-      <svg class="dz-icon" viewBox="0 0 48 48" aria-hidden="true" focusable="false"><path d="M24 31V9M15 18l9-9 9 9"/><path d="M8 29v7a4 4 0 0 0 4 4h24a4 4 0 0 0 4-4v-7"/></svg>
-      <p class="dz-title"><span class="dz-idle">Drag and drop your key file here</span><span class="dz-drop">Drop the key file or the answer</span></p>
-      <p class="dz-or">or</p>
-      <div class="dz-buttons">
-        <input class="file-input" type="file" id="key-file" accept=".json,application/json">
-        <label class="file-btn" for="key-file">Choose a key file</label>
-        <input class="file-input" type="file" id="answer-file" accept=".pptx,.docx,.xlsx,.txt,.md,.csv">
-        <label class="file-btn" for="answer-file">Choose a file to restore</label>
+  <section id="restore-sec" role="tabpanel" aria-labelledby="tab-restore" hidden>
+    <h2 id="restore-h">Put the real names back in Claude's answer</h2>
+    <p class="hint">Uses the client key at the top of the page. Closed the tab since you redacted? Open the key there first.</p>
+
+    <div class="substep">
+      <h3><span class="num" aria-hidden="true">1</span>Bring in Claude's answer</h3>
+      <div class="dropzone small answer" id="key-drop">
+        <svg class="dz-icon" viewBox="0 0 48 48" aria-hidden="true" focusable="false"><path d="M24 9v22M15 22l9 9 9-9"/><path d="M8 29v7a4 4 0 0 0 4 4h24a4 4 0 0 0 4-4v-7"/></svg>
+        <p id="answer-name" class="dz-file"></p>
+        <p class="dz-title"><span class="dz-idle">Drag and drop the file Claude made</span><span class="dz-again">Drop another file to replace it</span><span class="dz-drop">Drop the file Claude made</span></p>
+        <p class="dz-or">or</p>
+        <input class="file-input" type="file" id="answer-file" accept=".pptx,.docx,.xlsx,.html,.htm,.txt,.md,.csv">
+        <label class="file-btn" for="answer-file">Choose the file Claude made</label>
+        <p class="hint">A deck, document, workbook, web page (a dashboard) or text file with placeholders in it.</p>
       </div>
-      <p class="hint">The redaction-key-….json you saved, then the deck, document, workbook or text file Claude made with the placeholders.</p>
-      <p id="key-file-name" class="hint"></p>
+      <div id="restore-warn" class="warn hidden" role="alert"></div>
+      <label for="restore-in">Or paste Claude's answer</label>
+      <textarea id="restore-in" class="paste" spellcheck="false"></textarea>
     </div>
-    <div id="restore-warn" class="warn hidden" role="alert"></div>
-    <label for="restore-in">The AI's answer</label>
-    <textarea id="restore-in" spellcheck="false"></textarea>
-    <div class="row">
-      <button type="button" class="primary" id="btn-paste-restore">Paste and restore</button>
-      <button type="button" id="btn-restore">Restore</button>
+
+    <div class="substep">
+      <h3><span class="num" aria-hidden="true">2</span>Restore</h3>
+      <div class="row">
+        <button type="button" class="primary" id="btn-restore">Restore</button>
+        <button type="button" id="btn-paste-restore">Paste and restore</button>
+      </div>
+      <p class="hint">Paste and restore reads what you copied from Claude, restores it, and copies the result, ready to paste.</p>
+      <p class="status" id="restore-status" role="status" aria-live="polite"></p>
     </div>
-    <p class="hint">Paste and restore reads what you copied from Claude, restores it, and copies the result, ready to paste.</p>
-    <p class="status" id="restore-status" role="status" aria-live="polite"></p>
-    <div id="restore-out" class="hidden">
+
+    <div id="restore-out" class="substep hidden">
+      <h3><span class="num" aria-hidden="true">3</span>Check it, then save it outside Claude Workspace</h3>
       <label for="restored">Restored text</label>
       <textarea id="restored" spellcheck="false" readonly></textarea>
       <div class="row">
         <button type="button" class="primary" id="btn-copy-restored">Copy restored text</button>
         <button type="button" id="btn-save-restored">Save restored file</button>
       </div>
+      <div class="status saved" id="restored-saved" role="status" aria-live="polite"></div>
     </div>
   </section>
 
@@ -670,6 +779,14 @@ const RedactCore = (() => {
     return out;
   }
 
+  /** Every value an opened key already holds is hidden in later files too,
+   *  with the placeholder it already has: "Keisha Daniels" from last week's
+   *  CRM export stays [CONTACT-NAME-8] in this week's deck. The leak check
+   *  looks for each of them, so redaction must find each of them too. Your
+   *  own lists come first, so a name you type keeps your list's placeholder. */
+  const knownTerms = (session) =>
+    (session ? session.key.entries : []).filter((e) => e.value.trim().length >= 3).map((e) => ({ term: e.value.trim(), kind: e.kind, canonical: e.value, label: "", column: e.kind === "COLUMN" ? "KNOWN" : "" }));
+
   function emptyKey() {
     return { tool: "redact-restore", version: 1, entries: [] };
   }
@@ -897,8 +1014,17 @@ const RedactCore = (() => {
     return applyPlan(text, planMatches(text, options, compiled, session));
   }
 
+  /** A file's name is redacted too, or "kestrel-launch-plan" would carry the
+   *  code name into the chat. Names are often lowercase and hyphenated, so
+   *  every term matches there in any case. */
+  function redactName(name, options, session) {
+    const s = String(name).normalize("NFC");
+    const compiled = compileTerms(allTerms(options).concat(knownTerms(session)).map((t) => ({ ...t, caseSensitive: false })));
+    return applyPlan(s, planMatches(s, options, compiled, session));
+  }
+
   function redactText(text, options, session) {
-    return replaceMatches(String(text).normalize("NFC"), options, compileTerms(allTerms(options)), session);
+    return replaceMatches(String(text).normalize("NFC"), options, compileTerms(allTerms(options).concat(knownTerms(session))), session);
   }
 
   /* ---- Names the lists missed --------------------------------------------- */
@@ -1140,7 +1266,7 @@ const RedactCore = (() => {
     }
     for (const t of nameParts(people)) if (!seen.has(t.term.toLowerCase())) extra.push(t);
     const userTerms = allTerms(options);
-    const compiled = compileTerms(userTerms.concat(extra));
+    const compiled = compileTerms(userTerms.concat(extra, knownTerms(session)));
     const keepIdx = act.map((a, i) => (a === "drop" ? -1 : i)).filter((i) => i >= 0);
     // The header row is redacted too, against your own list and the patterns
     // (not the masked values, which would turn "Region" into a placeholder):
@@ -1206,8 +1332,10 @@ const RedactCore = (() => {
   }
 
   /** The restore plan for one string. `map` is placeholder → value; `stats`
-   *  collects { replaced, inLinks, unknown } across every string of a file. */
-  function planRestore(text, map, stats) {
+   *  collects { replaced, inLinks, unknown } across every string of a file.
+   *  `skip(at)`, when given, is asked about each known placeholder outside a
+   *  link, in file order; true leaves it in place, counted with the links. */
+  function planRestore(text, map, stats, skip) {
     const s = String(text || "");
     let mask = null;
     const inLink = (at, end) => {
@@ -1221,7 +1349,7 @@ const RedactCore = (() => {
         stats.unknown.add(ph);
         continue;
       }
-      if (inLink(m.index, m.index + ph.length)) {
+      if (inLink(m.index, m.index + ph.length) || (skip && skip(m.index))) {
         stats.inLinks++;
         continue;
       }
@@ -1233,12 +1361,61 @@ const RedactCore = (() => {
 
   const keyMap = (key) => new Map((key && Array.isArray(key.entries) ? key.entries : []).map((e) => [e.placeholder, e.value]));
 
-  function restore(text, key) {
-    const s = String(text || "");
+  function restoreWith(s, map, skip) {
     const stats = { replaced: 0, inLinks: 0, unknown: new Set() };
-    const out = applyPlan(s, planRestore(s, keyMap(key), stats));
-    return { text: out, replaced: stats.replaced, inLinks: stats.inLinks, unknown: [...stats.unknown] };
+    const text = applyPlan(s, planRestore(s, map, stats, skip));
+    return { text, replaced: stats.replaced, inLinks: stats.inLinks, unknown: [...stats.unknown] };
   }
+  function restore(text, key) {
+    return restoreWith(String(text || ""), keyMap(key));
+  }
+
+  /** Restore into a web page (a dashboard the AI built). Each real value goes
+   *  in as escaped text, so a name like "Smith & Co" or one carrying "<" can't
+   *  break the page or run as code; placeholders inside tags or links stay
+   *  put, as in any restore. */
+  const escHtml = (v) => String(v).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+  function restoreHtml(text, key) {
+    const s = disarm(String(text || ""));
+    const map = new Map([...keyMap(key)].map(([ph, v]) => [ph, escHtml(v)]));
+    // Never inside a tag, found the way a browser reads one (a ">" inside
+    // quotes doesn't end it), so no attribute or address can carry a name.
+    const tags = [...s.matchAll(/<[A-Za-z!/?](?:[^<>"']|"[^"]*"|'[^']*')*>/g)].map((m) => [m.index, m.index + m[0].length]);
+    // Tags don't overlap and come in file order, and planRestore asks in file
+    // order too, so one pointer walks the tags once.
+    let t = 0;
+    const inTag = (at) => {
+      while (t < tags.length && tags[t][1] <= at) t++;
+      return t < tags.length && at > tags[t][0];
+    };
+    const r = restoreWith(s, map, inTag);
+    return { ...r, text: lockPage(r.text) };
+  }
+
+  /** The restored page carries real names, and the AI wrote it: lock it so
+   *  nothing in it can carry them off. No scripts at all (a script could
+   *  navigate away with the names, and a policy can't stop navigation), and no
+   *  network, forms or outside content; its inline styles and SVG still draw
+   *  it, which is all a dashboard built to the skill uses. Placeholders inside
+   *  tags are never restored, so no link or refresh address can carry a name
+   *  either. It goes first in the file (after a doctype only when that is the
+   *  very first thing, to keep standards mode), never after a tag the page
+   *  wrote: a page could put a script before its <head>, or a fake "<head>"
+   *  in a comment. A first <meta> lands in the head the browser makes and
+   *  applies before anything after it. A page's own policy can only tighten it. */
+  const PAGE_LOCK = `<meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'none'; style-src 'unsafe-inline'; img-src data:; font-src data:; connect-src 'none'; form-action 'none'; base-uri 'none'">`;
+  function lockPage(html) {
+    const lead = /^\uFEFF?\s*<!doctype[^>]*>/i.exec(html);
+    return lead ? lead[0] + PAGE_LOCK + html.slice(lead[0].length) : PAGE_LOCK + html;
+  }
+  /** Two things reach out with no code at all, and a policy stops neither: a
+   *  meta http-equiv refresh (it navigates away) and a link rel prefetch.
+   *  Renaming the attribute switches each off, and an attribute's name can't
+   *  be disguised the way its value can, so this catches every spelling. The
+   *  lock's own charset stands in for a dropped Content-Type. */
+  const disarm = (html) => html.replace(/\b(http-equiv|rel)(?=\s*=)/gi, "data-off-$1");
+  /** Whether a page relies on scripts, which the locked copy won't run. */
+  const hasScript = (html) => /<(?:script)\b/i.test(String(html || "")); // grouped, so the page's own source holds one script tag
 
   /** What kind of file this is, by its name, when it is one the page cannot
    * read as text (null when it can): reading these as text would fill the box
@@ -1390,14 +1567,15 @@ const RedactCore = (() => {
 
   /**
    * Whether a key that just arrived may take over from the one in use:
-   * "load" it, "same" (it's the one in use), or "refuse", when the one in
-   * use holds placeholders that haven't been saved, which would otherwise be
-   * lost (a key-shaped file dropped as the AI's answer, by mistake or not).
+   * "load" it (the same key as the one in use loads too), or "refuse", when
+   * the one in use holds placeholders that haven't been saved, which would
+   * otherwise be lost (a key-shaped file dropped as the AI's answer, by
+   * mistake or not).
    */
   function keySwap(current, saved, incoming) {
     if (!current || !current.entries.length || saved) return "load";
     const same = (k) => JSON.stringify(k.entries.map((e) => [e.placeholder, e.value, e.kind]));
-    return same(current) === same(incoming) ? "same" : "refuse";
+    return same(current) === same(incoming) ? "load" : "refuse";
   }
 
   /** Percent-escapes decoded where they decode cleanly ("Best%20Byte" → "Best Byte"); others are left as they are. */
@@ -1410,7 +1588,7 @@ const RedactCore = (() => {
       }
     });
 
-  return { KIND_LABEL, LISTS, COMMON_WORDS, tidy, pctDecode, csvCell, Session, parseTerms, allTerms, nameParts, joinedForms, personColumn, suggestNames, planMatches, applyPlan, planRestore, keyMap, compileTerms, findMatches, redactText, redactCsv, parseCsv, looksLikeCsv, suggestAction, restore, validateKey, validProfile, profileOf, mergeLines, keySwap, parseKey, fileKind, looksBinary, incompatibleHelp, luhn, cardSpans, headerPrefix, mimeProblem };
+  return { KIND_LABEL, LISTS, COMMON_WORDS, tidy, pctDecode, csvCell, Session, parseTerms, allTerms, knownTerms, redactName, nameParts, joinedForms, personColumn, suggestNames, planMatches, applyPlan, planRestore, keyMap, compileTerms, findMatches, redactText, redactCsv, parseCsv, looksLikeCsv, suggestAction, restore, restoreHtml, hasScript, validateKey, validProfile, profileOf, mergeLines, keySwap, parseKey, fileKind, looksBinary, incompatibleHelp, luhn, cardSpans, headerPrefix, mimeProblem };
 })();
 
 /* ------------------------------------------------------------------ */
@@ -2238,7 +2416,8 @@ const OfficeCore = (() => {
   async function redactPackage(pkg, options, session, settings, depth = 0) {
     const report = { kind: pkg.kind, pictures: 0, deletions: 0, blockers: [...pkg.summary.blockers], leaks: [], embedded: 0, dropped: 0 };
     if (report.blockers.length) return { report };
-    const userTerms = RedactCore.allTerms(options);
+    // Your lists, then what the key already holds (the gate below looks for both).
+    const userTerms = RedactCore.allTerms(options).concat(RedactCore.knownTerms(session));
     let compiled = RedactCore.compileTerms(userTerms);
     const headerCompiled = compiled;
     const watch = new Set(); // original values that must not survive
@@ -3702,6 +3881,7 @@ if (typeof document !== "undefined") {
   // file. Entries only grow, so a key with more has unsaved placeholders.
   let savedEntries = 0;
   let loadedKey = null;
+  let keyName = null; // a key opened from a file is saved again under its own name
   // Column choices by header: from an opened profile, then from what the
   // person picks, so the next file with the same columns opens set. A
   // remembered choice only ever tightens: it can mask or drop a column the
@@ -3869,6 +4049,7 @@ if (typeof document !== "undefined") {
   function renderKeyRows(key) {
     const body = $("key-rows");
     body.replaceChildren();
+    $("replaced-count").textContent = plural(key.entries.length, "placeholder");
     for (const e of key.entries) {
       const tr = document.createElement("tr");
       for (const [text, cls] of [[e.placeholder, "mono"], [RedactCore.KIND_LABEL[e.kind] || e.kind, ""], [e.value, "mono"]]) {
@@ -3908,13 +4089,17 @@ if (typeof document !== "undefined") {
   /* ---- Word, PowerPoint and Excel files ------------------------------------ */
   let office = null; // { pkg, name } while a file is open in step 1
   let officeOut = null; // { bytes, name, kind } after a redaction
+  let textOutName = ""; // the redacted text's file name, redacted like the text
   let restoredFile = null; // { bytes, name, kind } after restoring into a file
+  let answerPage = null; // the web page's file name while its HTML sits in the restore box
+  let answerOffice = null; // a deck, document or workbook waiting for Restore
   const KIND_NAME = { pptx: "PowerPoint deck", docx: "Word document", xlsx: "Excel workbook" };
-  const WORD = { pptx: "deck", docx: "document", xlsx: "workbook" };
+  const WORD = { pptx: "deck", docx: "document", xlsx: "workbook", html: "web page" };
   const MIME = {
     pptx: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
     docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    html: "text/html",
   };
   const plural = (n, one, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
 
@@ -3962,7 +4147,7 @@ if (typeof document !== "undefined") {
       officeOut = null;
       showOffice();
       $("redact-out").classList.add("hidden");
-      $("in-file-name").textContent = `Opened: ${f.name}`;
+      showOpened("redact", f.name);
       $("redact-status").textContent = pkg.summary.blockers.length
         ? `Opened ${f.name}, but it holds something this tool can't redact. See the note above.`
         : `Opened ${f.name}. Fill in the lists, check the options, then click Redact.`;
@@ -4031,7 +4216,7 @@ if (typeof document !== "undefined") {
     $("office-panel").classList.add("hidden");
     $("office-sheets").replaceChildren();
     $("text-input").classList.remove("hidden");
-    $("in-file-name").textContent = "";
+    showOpened("redact", "");
     $("btn-save-out").textContent = "Save redacted file";
     renderCsvPanel();
   }
@@ -4096,33 +4281,67 @@ if (typeof document !== "undefined") {
       $("redact-out").classList.add("hidden");
       showProblems(res.report);
       $("redact-status").textContent = "No redacted copy yet. See the note above.";
+      $("in-warn").scrollIntoView?.({ block: "nearest" });
       return;
     }
-    officeOut = { bytes: res.bytes, name: OfficeCore.outName(name, "redacted"), kind: pkg.kind };
-    lastKey = session.key;
-    $("out-text").value = res.text;
-    renderKeyRows(lastKey);
-    renderSuggestions();
+    officeOut = { bytes: res.bytes, name: OfficeCore.outName(RedactCore.redactName(name, options(), session), "redacted"), kind: pkg.kind };
     $("btn-save-out").textContent = `Save redacted ${WORD[pkg.kind]}`;
-    $("redact-out").classList.remove("hidden");
+    primaryOut(true);
+    const n = showRedacted(res.text);
     const r = res.report;
     const extras = [r.pictures && plural(r.pictures, "picture") + " grayed out", r.deletions && plural(r.deletions, "deleted tracked change") + " removed", r.dropped && plural(r.dropped, "cell") + " dropped"].filter(Boolean);
-    const n = lastKey.entries.length;
     $("redact-status").textContent = `Done. ${plural(n, "detail")} replaced${extras.length ? `; ${extras.join(", ")}` : ""}. Read the text below, then save the redacted ${WORD[pkg.kind]}.`;
+  }
+
+  // Show a redaction's text and key; returns how many details the key holds.
+  function showRedacted(text) {
+    $("out-saved").replaceChildren();
+    lastKey = session.key;
+    $("out-text").value = text;
+    renderKeyRows(lastKey);
+    renderSuggestions();
+    $("redact-out").classList.remove("hidden");
+    return lastKey.entries.length;
+  }
+  // A restored file is named for the redacted one it came from.
+  const restoredName = (name, key) => OfficeCore.outName(RedactCore.restore(name.replace(/-redacted(?=\.\w+$)/, ""), key).text, "restored");
+
+  // A new answer file clears the last result, so Save never hands back an old one.
+  function clearRestored() {
+    showOpened("restore", "");
+    $("restored-saved").replaceChildren();
+    restoredFile = null;
+    $("restored").value = "";
+    $("restore-out").classList.add("hidden");
+  }
+
+  // An Office file waits for Restore, like every other answer. Restored the
+  // moment it opened, a click on Restore then replaced its result with the
+  // empty text box's, and Save handed back an empty file.
+  function holdOffice(f) {
+    clearRestored();
+    hideWarn("restore");
+    answerPage = null;
+    answerOffice = f;
+    $("restore-in").value = "";
+    showOpened("restore", f.name);
+    $("restore-status").textContent = `Opened ${f.name}. Click Restore, then save the restored file.`;
   }
 
   async function restoreOffice(f) {
     hideWarn("restore");
+    clearRestored();
     const key = lastKey || loadedKey;
     if (!key) {
-      $("restore-status").textContent = `To restore ${f.name}, open the key file you saved first (drop it here or choose it), then the ${f.name.split(".").pop().toLowerCase()} file.`;
+      $("restore-status").textContent = `To restore ${f.name}, open the client key first (Open a client key, at the top of the page), then the ${f.name.split(".").pop().toLowerCase()} file.`;
       return;
     }
     $("restore-status").textContent = `Restoring ${f.name}…`;
     try {
       const pkg = await OfficeCore.open(await readBytes(f));
       const r = await OfficeCore.restorePackage(pkg, key);
-      restoredFile = { bytes: r.bytes, name: OfficeCore.outName(f.name.replace(/-redacted(?=\.\w+$)/, ""), "restored"), kind: pkg.kind };
+      restoredFile = { bytes: r.bytes, name: restoredName(f.name, key), kind: pkg.kind };
+      showOpened("restore", f.name);
       $("restored").value = OfficeCore.extractText(await OfficeCore.open(r.bytes));
       $("restore-out").classList.remove("hidden");
       $("btn-save-restored").textContent = `Save restored ${WORD[pkg.kind]}`;
@@ -4131,7 +4350,7 @@ if (typeof document !== "undefined") {
       if (r.unknown.length) msg += ` Not in this key, left as they were: ${r.unknown.join(", ")}.`;
       $("restore-status").textContent = `${msg} Read the text below, then save the restored ${WORD[pkg.kind]}.`;
     } catch (err) {
-      restoredFile = null;
+      clearRestored();
       $("restore-status").textContent = officeError(err, f.name);
     }
   }
@@ -4139,6 +4358,54 @@ if (typeof document !== "undefined") {
   /* ---- PDFs (only when "Read PDF files" is ticked) ---------------------- */
   const IN_TYPES = $("in-types").textContent;
   const IN_ACCEPT = $("in-file").accept;
+  /* ---- An opened file shows on its box, so nobody opens it twice --------- */
+  const DROP = { redact: ["in-drop", "in-file-name", "in-file", "Choose a file"], restore: ["key-drop", "answer-name", "answer-file", "Choose the file Claude made"] };
+  function showOpened(zone, name) {
+    const [box, line, input, choose] = DROP[zone];
+    $(box).classList.toggle("has-file", !!name);
+    $(line).textContent = name ? `Opened ${name}` : "";
+    document.querySelector(`label[for="${input}"]`).textContent = name ? "Choose a different file" : choose;
+  }
+
+  /* ---- Tabs: Redact before Claude, Restore after ------------------------ */
+  const TABS = { redact: ["tab-redact", "redact-sec"], restore: ["tab-restore", "restore-sec"] };
+  let activeTab = "redact";
+  function showTab(name, focus) {
+    activeTab = name;
+    for (const [k, [tab, panel]] of Object.entries(TABS)) {
+      const on = k === name;
+      $(tab).setAttribute("aria-selected", String(on));
+      $(tab).tabIndex = on ? 0 : -1;
+      $(panel).hidden = !on;
+    }
+    if (focus) $(TABS[name][0]).focus();
+  }
+  for (const [k, [tab]] of Object.entries(TABS)) $(tab).addEventListener("click", () => showTab(k));
+  $("tab-redact").parentElement.addEventListener("keydown", (e) => {
+    if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key)) return;
+    e.preventDefault();
+    showTab(e.key === "Home" ? "redact" : e.key === "End" ? "restore" : activeTab === "redact" ? "restore" : "redact", true);
+  });
+  $("go-restore").addEventListener("click", () => {
+    showTab("restore");
+    $("tab-restore").scrollIntoView({ block: "start" });
+  });
+
+  /* ---- Folded settings say what they hold, and open when they hold more -- */
+  const AUTO = [["email", "email"], ["phone", "phone"], ["ssn", "SSNs"], ["card", "card numbers"], ["money", "money"], ["url", "links"]];
+  function syncFolds() {
+    const on = AUTO.filter(([k]) => $(`opt-${k}`).checked).map(([, t]) => t);
+    $("auto-summary").textContent = on.length ? on.join(", ") : "nothing";
+    if (AUTO.some(([k]) => $(`opt-${k}`).checked !== $(`opt-${k}`).defaultChecked)) $("auto-finds").open = true;
+    if (["list-project", "list-tool", "terms"].some((id) => $(id).value.trim())) $("more-lists").open = true;
+  }
+  for (const [k] of AUTO) $(`opt-${k}`).addEventListener("change", syncFolds);
+  syncFolds();
+  function primaryOut(file) {
+    $("btn-save-out").classList.toggle("primary", file);
+    $("btn-copy-out").classList.toggle("primary", !file);
+  }
+
   $("opt-pdf").addEventListener("change", () => {
     const on = $("opt-pdf").checked;
     $("in-file").accept = on ? `${IN_ACCEPT},.pdf,application/pdf` : IN_ACCEPT;
@@ -4167,7 +4434,7 @@ if (typeof document !== "undefined") {
       showIncompatible("redact", f.name, "scan");
       return;
     }
-    $("in-file-name").textContent = `Opened: ${f.name}`;
+    showOpened("redact", f.name);
     inName = f.name.replace(/\.pdf$/i, ".txt");
     $("in-text").value = pdf.text;
     renderCsvPanel();
@@ -4183,20 +4450,18 @@ if (typeof document !== "undefined") {
   function loadKey(obj, name) {
     const swap = RedactCore.keySwap(lastKey, !!lastKey && lastKey.entries.length === savedEntries, obj);
     if (swap === "refuse") {
-      $("restore-status").textContent = `${name} is a key file, but the key in use has placeholders you haven't saved, so it wasn't replaced. Save the key file in step 1 first, then open ${name} again.`;
+      $("key-status").textContent = `${name} is a key file, but the key in use has placeholders you haven't saved, so it wasn't replaced. Save the key file on the Redact tab first, then open ${name} again.`;
       return false;
     }
-    if (swap === "same") {
-      $("restore-status").textContent = `${name} is the key already in use.`;
-      return true;
-    }
-    $("key-file-name").textContent = `Key: ${name}`;
+    $("key-file-name").textContent = `${name} · ${plural(obj.entries.length, "placeholder")}${obj.profile ? ", with its lists" : ""}`;
     loadedKey = obj;
+    keyName = /\.json$/i.test(name) ? name : null;
     savedEntries = obj.entries.length;
     session = null;
     lastKey = null;
     const withProfile = obj.profile ? applyProfile(obj.profile) : "";
-    $("restore-status").textContent = `Key loaded: ${plural(obj.entries.length, "placeholder")}${withProfile}. Redacting more text will reuse them.`;
+    syncFolds();
+    $("key-status").textContent = `Key loaded: ${plural(obj.entries.length, "placeholder")}${withProfile}. Redacting more text will reuse them.`;
     return true;
   }
 
@@ -4242,11 +4507,11 @@ if (typeof document !== "undefined") {
       const key = RedactCore.parseKey(text);
       if (key) {
         const loaded = loadKey(key, name);
-        $("in-file-name").textContent = "";
-        $("redact-status").textContent = loaded ? `${name} is a key file, so it was opened as the key in step 2, not as text to redact.` : `${name} is a key file, so it wasn't opened as text to redact. Step 2 says why it isn't in use.`;
+        showOpened("redact", "");
+        $("redact-status").textContent = loaded ? `${name} is a key file, so it was opened as the client key (top of the page), not as text to redact.` : `${name} is a key file, so it wasn't opened as text to redact. The Restore tab says why it isn't in use.`;
         return;
       }
-      $("in-file-name").textContent = `Opened: ${name}`;
+      showOpened("redact", name);
       inName = name;
       $("in-text").value = text;
       renderCsvPanel();
@@ -4256,7 +4521,7 @@ if (typeof document !== "undefined") {
 
   function openKey(f) {
     if (f && RedactCore.fileKind(f.name) === "office") {
-      restoreOffice(f);
+      holdOffice(f);
       return;
     }
     readFile(f, "restore", (text, name) => {
@@ -4265,8 +4530,9 @@ if (typeof document !== "undefined") {
         loadKey(key, name);
       } else {
         loadedKey = null;
+        keyName = null;
         $("key-file-name").textContent = "";
-        $("restore-status").textContent = "That is not a Redact & Restore key file.";
+        $("key-status").textContent = "That is not a Redact & Restore key file.";
       }
     });
   }
@@ -4278,7 +4544,7 @@ if (typeof document !== "undefined") {
       return;
     }
     if (RedactCore.fileKind(f.name) === "office") {
-      restoreOffice(f);
+      holdOffice(f);
       return;
     }
     readFile(f, "restore", (text, name) => {
@@ -4287,18 +4553,25 @@ if (typeof document !== "undefined") {
         loadKey(key, name);
         return;
       }
-      restoredFile = null;
+      answerOffice = null;
+      clearRestored();
+      showOpened("restore", name);
+      answerPage = /\.html?$/i.test(name) ? name : null;
       $("restore-in").value = text;
-      $("restore-status").textContent = `Opened ${name} as the AI's answer. Click Restore.`;
+      $("restore-status").textContent = answerPage
+        ? `Opened the web page ${name}. Click Restore, then save the restored page.`
+        : `Opened ${name} as the AI's answer. Click Restore.`;
     });
   }
 
   // Clearing the input lets the same file be chosen again after a fix.
-  $("in-file").addEventListener("change", (e) => {
-    const f = e.target.files && e.target.files[0];
-    e.target.value = "";
-    openInput(f);
-  });
+  for (const [id, open] of [["in-file", openInput], ["key-file", openKey], ["answer-file", (f) => f && openAnswer(f)]]) {
+    $(id).addEventListener("change", (e) => {
+      const f = e.target.files && e.target.files[0];
+      e.target.value = "";
+      open(f);
+    });
+  }
   // Typing or pasting replaces whatever file was opened, so stop trusting its
   // name: spreadsheet mode then follows the text itself.
   $("in-text").addEventListener("input", () => {
@@ -4306,10 +4579,15 @@ if (typeof document !== "undefined") {
     hideWarn("redact");
     renderCsvPanel();
   });
-  $("restore-in").addEventListener("input", () => hideWarn("restore"));
+  $("restore-in").addEventListener("input", () => {
+    answerPage = null;
+    answerOffice = null;
+    showOpened("restore", "");
+    hideWarn("restore");
+  });
 
   // The whole box opens the file window, not only its button.
-  for (const [zone, input] of [["in-drop", "in-file"], ["key-drop", "key-file"]]) {
+  for (const [zone, input] of [["in-drop", "in-file"], ["key-drop", "answer-file"]]) {
     $(zone).addEventListener("click", (e) => {
       if (!(e.target instanceof Element) || !e.target.closest("label, input, button")) $(input).click();
     });
@@ -4322,6 +4600,7 @@ if (typeof document !== "undefined") {
     }
     officeOut = null;
     $("btn-save-out").textContent = "Save redacted file";
+    primaryOut(false);
     const text = $("in-text").value;
     if (!text.trim()) {
       $("redact-status").textContent = "Paste some text or open a file first.";
@@ -4342,12 +4621,8 @@ if (typeof document !== "undefined") {
       }
       out = RedactCore.redactText(text, options(), session);
     }
-    lastKey = session.key;
-    $("out-text").value = out;
-    renderKeyRows(lastKey);
-    renderSuggestions();
-    $("redact-out").classList.remove("hidden");
-    const n = lastKey.entries.length;
+    textOutName = `${RedactCore.redactName(base(), options(), session)}-redacted.${ext()}`;
+    const n = showRedacted(out);
     $("redact-status").textContent = n
       ? `Done. ${plural(n, "detail")} replaced. Read the result below before you paste it.`
       : "Nothing matched. Add names and words to hide, or check the boxes above, then try again.";
@@ -4357,13 +4632,25 @@ if (typeof document !== "undefined") {
   // Suggestions only: nothing is hidden until the person adds a name to a list.
   // Dismissed names are remembered for this visit only (Start over forgets them).
   const SUGGEST_MAX = 12;
-  const LIST_CHOICES = [["PERSON", "People"], ["COMPANY", "Companies"], ["PRODUCT", "Products and code names"], ["PROJECT", "Projects and topics"], ["TOOL", "Tools and systems"], ["TERM", "Anything else"]];
+  const LIST_CHOICES = [["PERSON", "People"], ["COMPANY", "Companies"], ["PRODUCT", "Products & code names"], ["PROJECT", "Projects and topics"], ["TOOL", "Tools and systems"], ["TERM", "Anything else"]];
   const listBox = (kind) => $(kind === "TERM" ? "terms" : `list-${kind.toLowerCase()}`);
   const WHY = ["after a title", "after a greeting", "a capitalized name", "a capitalized word"];
   const dismissed = new Set();
 
+  // The shown list and Dismiss all must read the same names.
+  const suggestions = () => RedactCore.suggestNames($("out-text").value, options(), { csv: !!csvHeader && !office });
+
+  // "Dalton" starts on Companies when "Dalton Computers" is on that list: a
+  // word of a name already listed belongs with it. People otherwise.
+  function listHolding(name) {
+    const word = new RegExp(`(^|[^\\p{L}\\p{N}])${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}($|[^\\p{L}\\p{N}])`, "iu");
+    const hit = LIST_CHOICES.find(([kind]) => RedactCore.parseTerms(listBox(kind).value).some((t) => word.test(t.term)));
+    return hit ? hit[0] : "PERSON";
+  }
+
   function renderSuggestions() {
-    const all = RedactCore.suggestNames($("out-text").value, options(), { csv: !!csvHeader && !office }).filter((x) => !dismissed.has(x.name.toLowerCase()));
+    const found = suggestions();
+    const all = found.filter((x) => !dismissed.has(x.name.toLowerCase()));
     const shown = all.slice(0, SUGGEST_MAX);
     const rows = shown.map((x, i) => {
       const li = document.createElement("li");
@@ -4384,6 +4671,7 @@ if (typeof document !== "undefined") {
         o.textContent = t;
         sel.append(o);
       }
+      sel.value = listHolding(x.name);
       const wrap = selectWrap(sel);
       const addBtn = document.createElement("button");
       addBtn.type = "button";
@@ -4405,6 +4693,9 @@ if (typeof document !== "undefined") {
     $("suggest-rows").replaceChildren(...rows);
     $("suggest-more").textContent = all.length > shown.length ? `And ${all.length - shown.length} more. Add or dismiss these to see them.` : "";
     $("suggest").classList.toggle("hidden", !rows.length);
+    // Say so when the check found nothing, so "nothing to suggest" doesn't
+    // look like "didn't check". Not after a dismissal: those names are still in.
+    $("suggest-none").classList.toggle("hidden", found.length > 0);
   }
 
   // Put the name on the chosen list (once), then redact again the usual way,
@@ -4414,6 +4705,7 @@ if (typeof document !== "undefined") {
     const lines = box.value.split(/\r?\n/).map((l) => l.split(/\s*=>\s*/)[0].split("|")[0].trim().toLowerCase());
     if (!lines.includes(name.toLowerCase())) box.value = box.value.replace(/\s*$/, box.value.trim() ? "\n" : "") + name;
     const label = LIST_CHOICES.find(([v]) => v === kind)[1];
+    syncFolds();
     if (office) await redactOffice();
     else $("btn-redact").click();
     const st = $("redact-status");
@@ -4421,33 +4713,78 @@ if (typeof document !== "undefined") {
   }
 
   $("suggest-dismiss").addEventListener("click", () => {
-    for (const x of RedactCore.suggestNames($("out-text").value, options(), { csv: !!csvHeader && !office })) dismissed.add(x.name.toLowerCase());
+    for (const x of suggestions()) dismissed.add(x.name.toLowerCase());
     renderSuggestions();
   });
 
+  // Start over forgets the key. If it holds names not yet saved, the first
+  // click only asks: without the key file, nothing redacted today restores.
+  let clearArmed = null;
+  function disarmClear() {
+    clearTimeout(clearArmed);
+    clearArmed = null;
+    $("btn-clear").classList.remove("armed");
+    $("btn-clear-label").textContent = "Start over";
+  }
   $("btn-clear").addEventListener("click", () => {
+    if (!clearArmed && lastKey && lastKey.entries.length !== savedEntries) {
+      $("btn-clear").classList.add("armed");
+      $("btn-clear-label").textContent = "Key not saved: click again to forget it";
+      clearArmed = setTimeout(disarmClear, 6000);
+      return;
+    }
+    disarmClear();
     dismissed.clear();
     $("suggest").classList.add("hidden");
+    $("suggest-none").classList.add("hidden");
     $("suggest-rows").replaceChildren();
     session = null;
     lastKey = null;
+    // A fresh start forgets the client too: its key, lists and column
+    // choices. Otherwise the next client's names would join this client's
+    // key, and saving it would write over this client's key file.
+    loadedKey = null;
+    keyName = null;
+    savedEntries = 0;
+    profileColumns = new Map();
+    for (const kind of RedactCore.LISTS) $(`list-${kind.toLowerCase()}`).value = "";
+    $("terms").value = "";
+    $("key-file-name").textContent = "";
+    $("key-status").textContent = "";
+    $("restore-status").textContent = "";
     inName = "text";
     $("in-text").value = "";
     $("in-file").value = "";
-    $("in-file-name").textContent = "";
+    showOpened("redact", "");
     $("out-text").value = "";
     $("key-rows").replaceChildren();
     $("redact-out").classList.add("hidden");
     csvHeader = null;
     clearOffice();
     hideWarn("redact");
-    $("redact-status").textContent = "Cleared. Nothing was saved anywhere.";
+    $("restore-in").value = "";
+    answerPage = answerOffice = null;
+    clearRestored();
+    hideWarn("restore");
+    for (const [k] of AUTO) $(`opt-${k}`).checked = $(`opt-${k}`).defaultChecked;
+    for (const id of ["more-lists", "auto-finds", "replaced"]) $(id).open = false;
+    syncFolds();
+    showTab("redact");
+    $("redact-status").textContent = "Cleared, key and lists too. Nothing was saved anywhere. For a client you've done before, open their key.";
   });
 
   $("btn-copy-out").addEventListener("click", () => copy($("out-text").value, $("redact-status")));
+  // Each save names the file it made, under its buttons: browsers save quietly.
+  // One line per file, so saving the key doesn't hide what the deck was saved as.
+  function saved(id, name, tail) {
+    const line = [...$(id).children].find((p) => p.dataset.name === name) || $(id).appendChild(document.createElement("p"));
+    line.dataset.name = name;
+    line.textContent = `Saved ${name} to your browser's downloads folder (usually Downloads). ${tail}`;
+  }
   $("btn-save-out").addEventListener("click", () => {
-    if (officeOut) download(officeOut.name, officeOut.bytes, MIME[officeOut.kind]);
-    else download(`${base()}-redacted.${ext()}`, $("out-text").value, "text/plain");
+    const name = officeOut ? officeOut.name : textOutName;
+    download(name, officeOut ? officeOut.bytes : $("out-text").value, officeOut ? MIME[officeOut.kind] : "text/plain");
+    saved("out-saved", name, "It holds placeholders only, ready for Claude.");
   });
   $("office-remove").addEventListener("click", () => {
     const name = office && office.name;
@@ -4460,20 +4797,12 @@ if (typeof document !== "undefined") {
     if (!lastKey) return;
     profileColumns = currentColumns();
     const profile = RedactCore.profileOf(options(), profileColumns);
-    download(`redaction-key-${stamp()}.json`, JSON.stringify({ ...lastKey, profile, saved: new Date().toISOString() }, null, 2), "application/json");
+    // The key you opened keeps its name (dalton-key.json), so saving it again
+    // replaces it rather than leaving a new file to rename.
+    const name = keyName || `redaction-key-${stamp()}.json`;
+    download(name, JSON.stringify({ ...lastKey, profile, saved: new Date().toISOString() }, null, 2), "application/json");
     savedEntries = lastKey.entries.length;
-  });
-
-  // Clearing the input lets the same file be chosen again after a fix.
-  $("key-file").addEventListener("change", (e) => {
-    const f = e.target.files && e.target.files[0];
-    e.target.value = "";
-    openKey(f);
-  });
-  $("answer-file").addEventListener("change", (e) => {
-    const f = e.target.files && e.target.files[0];
-    e.target.value = "";
-    if (f) openAnswer(f);
+    saved("out-saved", name, `Keep it outside Claude Workspace: it undoes the redaction.${keyName ? " If an older copy is in that folder, your browser may add a number: keep the newest." : " Rename it for the client, like dalton-key.json."}`);
   });
 
   // Drag and drop. A file dropped anywhere is caught here, so the browser
@@ -4481,7 +4810,7 @@ if (typeof document !== "undefined") {
   // Over step 2 it is the key or the AI's answer; anywhere else it is the text
   // to redact. Dragged text, not files, keeps the browser's own behavior.
   const hasFiles = (e) => !!e.dataTransfer && Array.from(e.dataTransfer.types || []).includes("Files");
-  const zoneOf = (t) => (t && t.closest && t.closest("#restore-sec") ? "restore" : "redact");
+  const zoneOf = (t) => (t?.closest?.("#restore-sec") ? "restore" : t?.closest?.("#redact-sec") ? "redact" : activeTab);
   function highlight(zone) {
     $("redact-sec").classList.toggle("drop-target", zone === "redact");
     $("restore-sec").classList.toggle("drop-target", zone === "restore");
@@ -4509,12 +4838,12 @@ if (typeof document !== "undefined") {
     (zone === "restore" ? openAnswer : openInput)(files[0]);
   });
 
-  $("btn-restore").addEventListener("click", () => restoreText());
+  $("btn-restore").addEventListener("click", () => (answerOffice ? restoreOffice(answerOffice) : restoreText()));
   // One click for the common case: read Claude's answer from the clipboard,
   // restore it, and put the restored text back on the clipboard.
   $("btn-paste-restore").addEventListener("click", async () => {
     if (!(lastKey || loadedKey)) {
-      $("restore-status").textContent = "Redact something above first, or open the key file you saved.";
+      $("restore-status").textContent = "Redact something on the Redact tab first, or open the client key at the top of the page.";
       return;
     }
     let text = "";
@@ -4528,6 +4857,9 @@ if (typeof document !== "undefined") {
       $("restore-status").textContent = `The browser didn't share what you copied. The box is ready: press ${IS_MAC ? "⌘V" : "Ctrl+V"} to paste, then click Restore.`;
       return;
     }
+    answerPage = null;
+    answerOffice = null;
+    showOpened("restore", "");
     $("restore-in").value = text;
     if (!restoreText()) return;
     const done = $("restore-status").textContent;
@@ -4543,16 +4875,25 @@ if (typeof document !== "undefined") {
     // The newest key wins: a redaction run after loading a key extends it.
     const key = lastKey || loadedKey;
     if (!key) {
-      $("restore-status").textContent = "Redact something above first, or open the key file you saved.";
+      $("restore-status").textContent = "Redact something on the Redact tab first, or open the client key at the top of the page.";
       return false;
     }
-    const r = RedactCore.restore($("restore-in").value, key);
-    restoredFile = null;
-    $("btn-save-restored").textContent = "Save restored file";
+    const r = (answerPage ? RedactCore.restoreHtml : RedactCore.restore)($("restore-in").value, key);
+    restoredFile = answerPage
+      ? { bytes: r.text, name: restoredName(answerPage, key), kind: "html" }
+      : null;
+    $("btn-save-restored").textContent = answerPage ? `Save restored ${WORD.html}` : "Save restored file";
     $("restored").value = r.text;
+    $("restored-saved").replaceChildren();
     $("restore-out").classList.remove("hidden");
     let msg = `Restored ${plural(r.replaced, "placeholder")}.`;
-    if (r.inLinks) {
+    if (answerPage) {
+      msg += " The restored copy is locked: it runs no code and loads or sends nothing. Save it, then open it on this computer, and keep it out of Claude Workspace: it carries real names now.";
+      if (RedactCore.hasScript($("restore-in").value)) msg += " This page has code in it, which the locked copy won't run: if it looks blank or half drawn, ask Claude to rebuild it with no scripts, then restore again.";
+    }
+    if (r.inLinks && answerPage) {
+      msg += ` ${r.inLinks} inside tags or links ${r.inLinks === 1 ? "was" : "were"} left as placeholders: a real name never goes inside a link or a page's code.`;
+    } else if (r.inLinks) {
       msg += ` ${r.inLinks} inside web links ${r.inLinks === 1 ? "was" : "were"} left as placeholders: your real values never belong inside a link, and an AI answer that puts them there may have been tampered with.`;
     }
     if (r.unknown.length) msg += ` Not in this key, left as they were: ${r.unknown.join(", ")}.`;
@@ -4571,8 +4912,9 @@ if (typeof document !== "undefined") {
     });
   }
   $("btn-save-restored").addEventListener("click", () => {
-    if (restoredFile) download(restoredFile.name, restoredFile.bytes, MIME[restoredFile.kind]);
-    else download(`restored-${stamp()}.txt`, $("restored").value, "text/plain");
+    const name = restoredFile ? restoredFile.name : `restored-${stamp()}.txt`;
+    download(name, restoredFile ? restoredFile.bytes : $("restored").value, restoredFile ? MIME[restoredFile.kind] : "text/plain");
+    saved("restored-saved", name, "It has the real names: keep it outside Claude Workspace.");
   });
 }
 </script>

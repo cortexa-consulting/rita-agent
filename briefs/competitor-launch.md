@@ -18,5 +18,13 @@
 - The loss is [concentrated in / spread across] [where].
 - We recommend [response] before [event].
 
+**The ask:** [who] decides [what] by [date].
+
+## Page 1 numbers and chart
+- Numbers: the competitor's change in points at the launch retailers; ours;
+  the comparison retailers' change (before → after under each).
+- Chart: change in share, in points, by retailer, one bar per brand; launch
+  retailers first and shaded.
+
 ## Watch-outs
 A few weeks after a launch is early. Say how many weeks the comparison covers.

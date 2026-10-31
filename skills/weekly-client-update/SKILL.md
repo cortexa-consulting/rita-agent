@@ -61,6 +61,10 @@ it.
   practice account is `projects/dalton/`) and read its `brief.md`,
   `memory.md` and `reference/` folder; an engagement's folder too, when the
   update is for one.
+- **Learn from the sources, not old outputs.** Take the client's style
+  and rules from its `brief.md` and `reference/`, not by copying an earlier
+  file in `outputs/`. If an old deliverable is the best example, suggest
+  putting a copy in `reference/`.
 - **Save** to `outputs/<account>/drafts/` at the top of the workspace, or
   `outputs/drafts/` when no account applies, unless the person names a
   place. Say where it is.

@@ -14,7 +14,7 @@ survive first.
 | Folder | What it is |
 | --- | --- |
 | `CLAUDE.md` | RITA's instructions: how it scopes, gathers, analyzes, reviews and delivers, and its confidentiality rules. |
-| `briefs/` | Five brief templates: market share, category scan, price and promotion watch, shopper trends, competitor launch. |
+| `briefs/` | Five brief templates (market share, category scan, price and promotion watch, shopper trends, competitor launch), and `SAMPLE-brief.pdf`: what a finished two-page brief looks like, with an invented brand and invented numbers. |
 | `skills/` | Eleven skills, installed as one plugin, **AISLE**: inbox triage, sell-through recap, client deck, Excel grid, sales dashboard, store visit report, the redaction partner, new account, retailer meeting prep, weekly client update and wrap-up. The plugin's files are in `.claude-plugin/`. |
 | `tools/redact-restore/` | **Redact & Restore**, a one-file offline page that swaps names and contact details for placeholders before you paste, and swaps them back afterward. |
 | `data-pack/` | Practice data from an invented agency, client and retailers. Every name, number and contact in it is fictional. |
@@ -24,10 +24,12 @@ survive first.
 
 1. **Download:** the green **Code** button on GitHub → **Download ZIP**, then
    unzip it into `Documents/Claude Workspace/projects/`.
-2. **Make a RITA project** in Claude Desktop: **Projects → + → Use an
-   existing folder**, pick your whole `Claude Workspace` folder (not just
-   this kit), and paste the contents of `CLAUDE.md` into the project's
-   instructions. Without the workshop's workspace, pick this kit's folder.
+2. **Make a RITA project** in Claude Desktop: **Projects → +**, name it
+   RITA and create it. On its page, **Context → Add → Link local folder**
+   and pick your whole `Claude Workspace` folder (not just this kit); then
+   **Instructions → Add** and paste the contents of `CLAUDE.md`. Link, never
+   upload: an upload is a one-time copy. Without the workshop's workspace,
+   link this kit's folder.
 3. **Ask RITA something, and name the client:**
    - `rita: for Dalton, how did laptop share move at Best Byte in Q3?` (practice data)
    - `rita: category scan for gaming monitors in US retail this fall` (public sources)

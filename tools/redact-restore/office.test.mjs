@@ -537,3 +537,16 @@ test("an XML part of millions of empty tags is refused, not turned into gigabyte
   assert.throws(() => O.tokenize("<a/>".repeat(6_000_001)), /too-large/);
   assert.equal(O.tokenize("<a/>".repeat(1000)).length, 1000);
 });
+
+test("the practice deck redacts cleanly with the Dalton key opened first: the key's own names are hidden, not just found", async () => {
+  const first = new R.Session();
+  R.redactCsv("Account Name,Contact Name\nValuMart,Keisha Daniels\n", { lists: {} }, first, ["mask", "mask"]);
+  const key = JSON.parse(JSON.stringify(first.key));
+  const deck = new Uint8Array(readFileSync(join(HERE, "../../data-pack/redact-practice/kestrel-launch-plan.pptx")));
+  const lists = { COMPANY: "Dalton Computers\nBest Byte\nValuMart\nHalcrest Retail Partners", PERSON: "Rachel Kim\nTessa Monroe\nTaylor Brooks\nPriya Shah", PRODUCT: "Project Kestrel | Kestrel" };
+  const res = await O.redactPackage(await O.open(deck), { ...OPTS, terms: "", lists }, new R.Session(key), { pictures: "gray", identity: true });
+  assert.deepEqual([...res.report.leaks], []);
+  assert.ok(res.bytes);
+  assert.ok(res.text.includes(key.entries.find((e) => e.value === "Keisha Daniels").placeholder));
+  assert.ok(!res.text.includes("Keisha"));
+});

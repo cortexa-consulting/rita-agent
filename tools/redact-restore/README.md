@@ -20,14 +20,19 @@ working with the placeholders instead of asking for the real values.
 
 1. **Open `redact-restore.html`** in your browser (double-click it). Nothing
    to install. It opens dark, like the Cortexa site; the round button at the
-   top right switches to light, and the page remembers your choice.
-2. **Drag a file into the upload box, click Choose a file, or paste text:**
-   a PowerPoint deck, Word document or Excel workbook (`.pptx`, `.docx`,
+   top right switches to light, and the page remembers your choice. At the
+   top is the **client bar**: the key that's open, **Open a client key**, and
+   **Start over**. Below it are two tabs, **Redact** (before Claude sees it)
+   and **Restore** (after Claude answers), each with numbered steps. For a
+   client you've done before, open their key first.
+2. **On the Redact tab, drag a file into the upload box, click Choose a
+   file, or paste text:** a PowerPoint deck, Word document or Excel workbook (`.pptx`, `.docx`,
    `.xlsx`), an email, notes or a CSV export (`.txt`, `.csv`, `.md`,
-   `.eml`), or a PDF's text once you tick **Read PDF files**.
-3. **List what to hide** in "Names and words to hide", one per line, in the
-   list it belongs to: **Companies** (`[COMPANY-01]`), **People**
-   (`[PERSON-01]`), **Products and code names** (`[PRODUCT-01]`: anything under
+   `.eml`), or a PDF's text once you tick **Read PDF files**. Once a file opens, the box turns jade and names it; another file simply
+   replaces it.
+3. **List what to hide**, one per line, in the list it belongs to (Projects,
+   Tools and "Anything else" sit under **More lists**): **Companies** (`[COMPANY-01]`), **People**
+   (`[PERSON-01]`), **Products & code names** (`[PRODUCT-01]`: anything under
    an NDA, such as an unreleased product), **Projects and topics**
    (`[PROJECT-01]`) and **Tools and systems** (`[TOOL-01]`). Each list numbers
    its own placeholders from 01 up, so the AI can tell a product from a
@@ -56,25 +61,34 @@ working with the placeholders instead of asking for the real values.
    placeholder like `[CONTACT-NAME-3]`, and those names are hidden wherever
    else they appear in the file too, first and last names on their own
    included, as in the People list. *Keep* everything the analysis needs.
-5. **Click Redact, then read the result.** Check the "What was replaced"
-   table. Anything still identifying? Add it to your list and redact again.
+5. **Click Redact, then read the result.** Open "What was replaced" (folded
+   under the redacted text). Anything still identifying? Add it to your list
+   and redact again.
    **"Names that may still be in"** lists capitalized words the tool saw
    and didn't hide: "Ms. Patel", "Hi Dana", "Marcus Webb", a word like
    "Jordan" mid-sentence. It only suggests. Pick a list and click **Add**
    to hide one (it redacts again for you), or **Dismiss** the ones that
-   aren't names. It leaves out headings, job titles, the header row of a
+   aren't names. A name that is a word of one already listed ("Dalton" when
+   "Dalton Computers" is on Companies) starts on that list. It leaves out headings, job titles, the header row of a
    spreadsheet, and a word that also appears in lower case ("Rose" when
    "sales rose" is there too), so read the text yourself as well.
+   The saved copy's file name is redacted with the same lists, in any case
+   (`kestrel-launch-plan.pptx` saves as `[PRODUCT-01]-launch-plan-redacted.pptx`),
+   and a restored file gets its real name back.
 6. **Save the key file.** It is the only thing that can undo the
    placeholders. Keep it on your computer, outside Claude Workspace. Never
    paste it, upload it, or attach it to an AI chat. Rename it for the client
-   (`dalton-key.json`): it is also that client's profile (below).
+   (`dalton-key.json`): it is also that client's profile (below). After
+   that, a key you opened is saved under its own name, so saving it again
+   replaces it (if the folder you save to already holds one, your browser may
+   add a number: keep the newest and rename it back).
 7. **Paste the redacted text into Claude, or upload the redacted file,** and
    do the work.
 8. **Restore.** Copy Claude's answer and click **Paste and restore**: the
    page reads what you copied, restores it, and copies the result, ready to
-   paste. Or paste it into step 2 yourself, or drag a file Claude made there
-   (open or drag in the key file if you closed the tab), and click Restore. Placeholders go back to the
+   paste. Or, on the Restore tab, paste it in yourself or drag in a file
+   Claude made (if you closed the page, open the key in the client bar
+   first), and click Restore. Placeholders go back to the
    real names, locally. A placeholder anywhere an app could turn into a
    request is deliberately left alone and reported: inside a web address
    (with or without `https://`, `//` or `www.`), a file path, a markdown
@@ -96,11 +110,20 @@ file and every chat.
   never wipes what you typed), can turn an automatic find on but never off,
   and can make a column stricter than the tool suggests but never looser. A
   key from someone else can't quietly hide less.
+- **Every name it holds stays hidden.** A name the key already has is
+  hidden in each new file with the placeholder it already has, whichever
+  file it came from: a contact masked in last week's CRM export is still
+  hidden when it turns up in this week's deck. Names you type on a list keep
+  your list's placeholder.
 - **It holds nothing new.** Every listed name is already in the key's
   entries; the profile adds your settings and column headers.
 - **A damaged profile refuses the whole key** rather than half-loading it.
 - **Save the key again after each redaction** so it learns new names. Keep
   one per client, outside Claude Workspace.
+- **Switching clients:** click **Start over** (or reload the page), then open
+  the next client's key. Start over forgets the key, its lists and column
+  choices, so one client's names never end up in another client's key. If
+  the key holds names you haven't saved, it asks once first.
 
 ## Where real names live
 
@@ -160,9 +183,25 @@ can't read, older `.ppt`/`.doc`/`.xls` files, and password-protected files.
 
 **Restore into a file.** Upload the redacted deck to Claude, let it edit or
 build a new deck, then drop the `.pptx` Claude made (or a `.docx` or
-`.xlsx`) on step 2 with your key. The real names go back in, layout intact,
+`.xlsx`) on the Restore tab with your key open. The real names go back in, layout intact,
 and **Save restored deck** gives you the file. As with text, a placeholder
 inside a link is left alone and counted.
+
+**Restore a web page.** A dashboard Claude builds is an `.html` file full of
+placeholders. Drop it on the Restore tab, click **Restore**, then **Save restored web
+page**: you get `…-restored.html` with every real name back. Each name goes
+in as escaped text (`Smith & Co` becomes `Smith &amp; Co` in the file), so a
+name can't break the page or run as code; placeholders inside a tag or a
+link stay put, so no link or refresh address can carry a name. The restored
+page is also locked: the tool stamps in a security policy that runs no
+scripts at all (a script could navigate away with the names, which a policy
+can't otherwise stop) and loads or sends nothing (no network, forms or
+outside content). The policy goes first in the file, ahead of anything the
+page wrote, and the page's own refresh and prefetch tags are switched off,
+since those reach out without any code. Its inline styles and SVG still
+draw it, which is all a dashboard built to the sales-dashboard skill uses; if
+a page relied on code, the tool says so, and the fix is to ask Claude to
+rebuild it without scripts. Open it on your laptop, and keep it out of Claude Workspace.
 
 Restoring is careful about where a real name could travel:
 
@@ -195,7 +234,7 @@ One more thing to know:
 
 ## PDFs (optional, off until you tick it)
 
-Tick **Read PDF files** under step 1's upload box and a PDF's text lands in
+Tick **Read PDF files** under the Redact tab's upload box and a PDF's text lands in
 the box, page by page, ready to redact like any other text. Two things to
 know first:
 
@@ -215,8 +254,9 @@ of pages, with no text inside to read. It doesn't read text in pictures
 (there's no OCR).
 
 The code that does all this is one section of `redact-restore.html`, called
-**PdfReader**, with a plain-English explanation at the top. It's written to
-be read: it's the whole of what the option does.
+**PdfReader**, with a plain-English explanation at the top. The browser never
+shows it: open the file in a text editor (TextEdit or Notepad) and search for
+PdfReader. It's written to be read: it's the whole of what the option does.
 
 ## What it finds on its own
 
@@ -262,9 +302,9 @@ and also reads web-address encoding (`Rachel%20Kim`). A title or suffix on a
 listed person (Dr, Ms, Jr, PhD) is never treated as a name on its own.
 
 **Drag and drop works anywhere on the page**, not only on the upload boxes.
-Over step 2, a dropped file is the key or the AI's answer; anywhere else, it
-is the text to redact. A key file dropped in step 1 (or chosen there) is
-loaded as the key instead of being put in the box, so its originals never sit
+On the Restore tab, a dropped file is the key or the AI's answer; on the
+Redact tab, it is the text to redact. A key file dropped anywhere (or chosen
+as a file to redact) is loaded as the client key instead of being put in the box, so its originals never sit
 in the text you are about to redact. A key never replaces one holding
 placeholders you haven't saved yet: save that one first. One file at a time.
 

@@ -16,7 +16,8 @@ Before any analysis, look for and report:
 - **Prices that do not fit** (an average selling price far from the others for
   the same SKU, e.g. a missing digit).
 - **Negative units** (usually returns: say so and ask; don't call them
-  errors until the team confirms).
+  errors until the team confirms). A return is real sell-through: keep it in
+  the totals as reported, even once confirmed. Never set it aside.
 - **Zero on-hand inventory** (an out-of-stock hides lost sales: estimate
   them against a comparable region or the SKU's in-stock weeks, include the
   restock week, state the method and label it an estimate).
@@ -35,7 +36,9 @@ grid and the draft, and say which.
   label in the cell (▲, ▼), never color alone.
 - Load the `excel-grid` skill and build the workbook by its rules: real
   formulas, Excel Tables, a `README` tab, and an include (Y/N) column for
-  any row a proposed fix leaves out.
+  any row a proposed fix leaves out. Its look comes too, fonts included:
+  replace the workbook's default font (openpyxl's font 0) and the theme's,
+  not only the cells you format.
 
 ## 3. Say what moved, and why you think so
 
@@ -51,7 +54,8 @@ promise in the person's name. Save it as its own file in a `drafts/` folder
 beside the grid, separate from your reply, even for a one-week recap. Never
 send it.
 
-Cite the file and rows behind every number.
+Cite the file and rows behind every number. The draft itself ends with a
+Source line: the file, and the rows or filter.
 
 ## Where things go
 
@@ -69,12 +73,19 @@ it.
   folder (brand guide, glossary, templates). Work for one engagement
   (`projects/<account>/<engagement>/`) reads that folder's `brief.md` and
   `memory.md` too.
+- **Learn from the sources, not old outputs.** Take the client's style
+  and rules from its `brief.md` and `reference/`, not by copying an earlier
+  file in `outputs/`. If an old deliverable is the best example, suggest
+  putting a copy in `reference/`.
 - **Write as the person.** Emails and drafts written as them follow
   `about-me/writing-rules.md`; your reply to them doesn't.
 - **Save** to `outputs/<account>/` (or `outputs/<account>/<engagement>/`) at
   the top of the workspace, or `outputs/sell-through-recap/` when no account
   applies, unless the person names a place. Without a workspace folder, offer
   the file to download. Say where it is.
+- **Working files stay out of the workspace.** Build scripts, test renders
+  and scratch copies go in a temporary folder outside it, or are deleted when
+  you finish; only what you deliver lands in `outputs/`.
 - **Offer a memory line.** When you deliver, write out a one- or two-line
   entry for the account's (or engagement's) `memory.md` (what you made, where,
   what's still open) and offer to add it. Write it only on a yes, and keep

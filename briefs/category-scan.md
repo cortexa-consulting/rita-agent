@@ -17,5 +17,14 @@
 - The biggest change on the shelf is [launch, price move, space change].
 - For [brand], the opportunity is [specific], and the risk is [specific].
 
+**The ask:** [who] decides [what] by [date].
+
+## Page 1 numbers and chart
+- Numbers: the category's change (units or dollars, say which); the biggest
+  mover's change in points; [brand]'s share now.
+- Chart: category units by week (this year against last, if the data has
+  it), with the change on the shelf marked.
+
 ## Then
-Findings (each cited) → what we are watching → the ask → sources → review notes.
+Page 2: findings (each cited and rated) → what we're watching → what we're
+not sure about → sources. Review notes go in the team notes, not the brief.

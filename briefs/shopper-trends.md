@@ -18,6 +18,14 @@
 - It matters for [brand] because [specific].
 - We recommend [action].
 
+**The ask:** [who] decides [what] by [date].
+
+## Page 1 numbers and chart
+- Numbers: the headline statistic (with its sample size); the evidence in
+  our own data; how big the affected group is.
+- Chart: the one series that shows the trend, with the source and sample
+  size in its title line.
+
 ## Rules
 Every survey statistic carries its source, sample size and date. A trend
 from one store visit is an anecdote; say so.

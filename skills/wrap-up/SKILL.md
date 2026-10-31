@@ -34,9 +34,16 @@ starts from the file instead of from scratch.
    what's safe ("Q3 has closed; totals not logged here").
 6. **Touch nothing else.** Only that `memory.md` and its
    `memory-archive.md`, plus `about-me/memory.md` if the workspace's layout
-   changed.
+   changed, and a source line the person approved (rule 7).
+7. **Fix the source, not just the output.** If the person made the same kind
+   of edit more than once (this session, or as memory.md already shows):
+   shortening openings, changing the tone, re-ranking priorities, propose
+   one line for the file that caused it: the account's `brief.md` for a
+   client preference, `about-me/writing-rules.md` for how they write, or a
+   note that a skill needs fixing. Editing the output fixes this run;
+   editing the source fixes every run after it. Write it only on a yes.
 
 ## Reply
 
 Show what you added, changed and moved, as short lists, and say what you
-left out and why.
+left out and why. Then any source fix you'd propose (rule 7), as one line.
