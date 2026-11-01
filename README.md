@@ -1,7 +1,7 @@
 # RITA: Retail Insights & Trends Analyst
 
 A take-home kit from a Cortexa Academy workshop for retail account teams:
-an AI analyst you run in Claude, eleven skills for the work you do every week,
+an AI analyst you run in Claude, twelve skills for the work you do every week,
 a tool that keeps sensitive details out of AI tools, and a practice data pack.
 
 Point RITA at your sales exports and the public web, and it returns a short,
@@ -15,7 +15,7 @@ survive first.
 | --- | --- |
 | `CLAUDE.md` | RITA's instructions: how it scopes, gathers, analyzes, reviews and delivers, and its confidentiality rules. |
 | `briefs/` | Five brief templates (market share, category scan, price and promotion watch, shopper trends, competitor launch), and `SAMPLE-brief.pdf`: what a finished two-page brief looks like, with an invented brand and invented numbers. |
-| `skills/` | Eleven skills, installed as one plugin, **AISLE**: inbox triage, sell-through recap, client deck, Excel grid, sales dashboard, store visit report, the redaction partner, new account, retailer meeting prep, weekly client update and wrap-up. The plugin's files are in `.claude-plugin/`. |
+| `skills/` | Twelve skills, installed as one plugin, **AISLE**: inbox triage, sell-through recap, client deck, Excel grid, sales dashboard, store visit report, the redaction partner, new account, retailer meeting prep, weekly client update, wrap-up and new workflow. The plugin's files are in `.claude-plugin/`. |
 | `tools/redact-restore/` | **Redact & Restore**, a one-file offline page that swaps names and contact details for placeholders before you paste, and swaps them back afterward. |
 | `data-pack/` | Practice data from an invented agency, client and retailers. Every name, number and contact in it is fictional. |
 | `references.md` | The sources behind the workshop's claims and best practices. |
@@ -41,7 +41,7 @@ It reads that client's folder under `projects/` and saves the brief to
 
 ## Install the skills (one plugin)
 
-The eleven skills install together as the **AISLE** plugin (Accounts ·
+The twelve skills install together as the **AISLE** plugin (Accounts ·
 Insights · Safeguards · Launches and pitches · Execution), and then trigger
 on their own in every chat and project. In Claude Desktop or claude.ai, go
 to **Customize → Plugins → Add**, then either:
@@ -56,7 +56,7 @@ instructions Claude will follow. To pick one yourself, type `/` and choose
 it (`/aisle:wrap-up`). In Claude Code: `/plugin marketplace add cortexa-consulting/rita-agent`,
 then `/plugin install aisle@cortexa`.
 
-**What AISLE runs:** nothing but instructions. Its eleven skills are text
+**What AISLE runs:** nothing but instructions. Its twelve skills are text
 files Claude reads; the plugin has no connectors, MCP servers, hooks or
 scripts, and it sends nothing anywhere. Redact & Restore is a separate page
 in `tools/` that makes no network requests at all.
@@ -75,6 +75,7 @@ Claude Workspace/
   projects/<account>/           brief.md (Shared and Mine sections), memory.md
     reference/                  brand guide, glossary, templates the team may see
     <engagement>/               brief.md and memory.md for one piece of work
+    workflows/<workflow>/       numbered stages, one CONTRACT.md each
   projects/rita-agent/          this kit
   outputs/<account>/            finished work; drafts/ for unsent drafts
 ```
@@ -86,6 +87,15 @@ the account's memory instead of writing one (the **wrap-up** skill writes
 it when you ask). Any part that isn't there is skipped. **new-account** sets
 up the folders for the next client. The redaction partner never uses these
 files to work out what a placeholder stands for.
+
+**Jobs you repeat** (next quarter's review, a monthly recap) can become a
+workflow: **new-workflow** sets one up as numbered stage folders, each with
+a short contract (what it takes in, what it hands on, which skill does it,
+what you check), then runs one stage at a time and stops for your check.
+When a stage keeps going wrong, fix its contract, not just this run's file.
+A worked example, the Dalton Q3 QBR in four stages, is in
+`skills/new-workflow/examples/dalton-q3-qbr/`. Try it in a Dalton project:
+`Set up the Dalton Q3 QBR as a workflow, using the example in the new-workflow skill.`
 
 ## Keeping sensitive information out of AI tools
 
