@@ -114,7 +114,7 @@ test("a PDF packed the modern way: object streams, a cross-reference stream in p
   ]);
 });
 
-test("read text redacts like any other text: nothing survives, except where the PDF itself split or glued a value", async () => {
+test("read text redacts like any other text: nothing survives, even where the PDF split or glued a value", async () => {
   for (const name of ["report.pdf", "chrome.pdf", "packed.pdf", "deck.pdf", "doc.pdf"]) {
     const { text } = await read(name);
     const out = R.redactText(text, OPTS, new R.Session());
@@ -124,12 +124,16 @@ test("read text redacts like any other text: nothing survives, except where the 
     // and its tracked change printed the deleted words flush against the inserted
     // ones ("Marcus WebbProject"). The glued name is now caught whole (a
     // capital starting the next word counts as a word's edge), and the split
-    // address loses its name ("rachel.kim" run together), but the domain the
-    // PDF broke in two still survives.
+    // address is now caught whole: a line break inside an address is read
+    // through when the two halves only make an address together.
     assert.deepEqual(survivors(out), [], name);
     if (name === "doc.pdf") {
       assert.match(out, /pricing for \[PERSON-\d+\]Project \[PRODUCT-\d+\] timing/);
-      assert.match(out, /\[PERSON-\d+\]@daltoncomputer\ns\.example/);
+      assert.match(out, /\[EMAIL-\d+\]/);
+      assert.doesNotMatch(out, /daltoncomputer|s\.example/);
+      const s = new R.Session();
+      R.redactText(text, OPTS, s);
+      assert.ok(s.key.entries.some((e) => e.kind === "EMAIL" && e.value === "rachel.kim@daltoncomputers.example"), "the key holds the address whole");
     }
   }
 });

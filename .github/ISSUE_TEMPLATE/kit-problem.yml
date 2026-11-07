@@ -1,0 +1,76 @@
+name: Something in the kit went wrong
+description: RITA, a skill or Redact & Restore gave a wrong result, skipped a step, or missed something.
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time. **Please don't paste real client data, names, numbers or email text.** A made-up example that shows the same behavior is all we need. Security problems go through the Security tab instead.
+  - type: dropdown
+    id: part
+    attributes:
+      label: Which part?
+      options:
+        - RITA (a brief)
+        - "Skill: inbox-triage"
+        - "Skill: sell-through-recap"
+        - "Skill: excel-grid"
+        - "Skill: client-deck"
+        - "Skill: sales-dashboard"
+        - "Skill: store-visit-report"
+        - "Skill: redaction-partner"
+        - "Skill: new-account"
+        - "Skill: retailer-meeting-prep"
+        - "Skill: weekly-client-update"
+        - "Skill: wrap-up"
+        - "Skill: new-workflow"
+        - Redact & Restore
+        - Data pack or brief templates
+        - Not sure
+    validations:
+      required: true
+  - type: dropdown
+    id: model
+    attributes:
+      label: Which Claude model? (skip for Redact & Restore)
+      options:
+        - Opus
+        - Sonnet
+        - Haiku
+        - Not sure
+        - Doesn't apply
+  - type: dropdown
+    id: where
+    attributes:
+      label: Where were you using it?
+      options:
+        - Claude Desktop
+        - claude.ai
+        - Claude Code
+        - A browser (Redact & Restore)
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: asked
+    attributes:
+      label: What did you do?
+      description: Your request, or the text or file type you redacted, with any client details replaced by made-up ones.
+    validations:
+      required: true
+  - type: textarea
+    id: happened
+    attributes:
+      label: What happened?
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Kit version
+      description: The AISLE version on the plugin's page in Claude, or the release you downloaded (for example 1.1.2).

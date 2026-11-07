@@ -1,0 +1,25 @@
+name: An idea
+description: Something RITA, a skill or Redact & Restore should do, or do differently.
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Tell us about the work, not only the feature. **Please don't include real client data.**
+  - type: textarea
+    id: job
+    attributes:
+      label: What's the job?
+      description: The task you do now, how often, and what makes it slow or error-prone.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would help?
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Anything else?
+      description: Files involved, who sees the result, rules it has to follow.

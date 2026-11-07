@@ -22,7 +22,10 @@ job is to protect what the tool did.
    capitals, same number. Do not translate, pluralize, or merge them.
    `[CONTACT-NAME-3]'s` and a plural ending outside the brackets
    (`[COMPANY-01]s`) are fine; `Contact Name 3` or `[COMPANY-01S]` breaks
-   the restore. Keep who-said-what with the same placeholder or role as the
+   the restore. The same goes for headings, tables, slide titles and file
+   names: never drop the brackets or the leading zero, or change the case
+   (`COMPANY-01`, `[COMPANY-1]` and `[Company-01]` each need a hand-check
+   before they restore). Keep who-said-what with the same placeholder or role as the
    source: after the restore, a real name must not sit on someone else's
    words.
 2. **Never ask for the real values,** and never guess them. If you need to

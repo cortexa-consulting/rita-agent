@@ -727,7 +727,7 @@ test("a key may carry the profile it was made with; anything malformed in it ref
 
 test("profileOf saves the lists, the automatic finds and the column choices, and nothing else", () => {
   const p = R.profileOf(
-    { lists: { COMPANY: "Best Byte", PERSON: "Rachel Kim" }, terms: "store 4471", email: true, phone: false, ssn: true, card: true, money: true, url: false, extra: "ignored" },
+    { lists: { COMPANY: "Best Byte", PERSON: "Rachel Kim" }, terms: "store 4471", email: true, phone: false, ssn: true, card: true, bank: true, secrets: true, money: true, url: false, extra: "ignored" },
     new Map([["Contact Email", "drop"], ["Stage", "mask"], ["", "keep"], ["Weird", "explode"]]),
   );
   // Objects from the page's VM have another realm's prototypes: compare as JSON.
@@ -735,7 +735,9 @@ test("profileOf saves the lists, the automatic finds and the column choices, and
   assert.equal(p.lists.COMPANY, "Best Byte");
   assert.equal(p.lists.PRODUCT, "");
   assert.equal(p.terms, "store 4471");
-  assert.equal(JSON.stringify(p.options), JSON.stringify({ email: true, phone: false, ssn: true, card: true, money: true, url: false }));
+  assert.equal(JSON.stringify(p.options), JSON.stringify({ email: true, phone: false, ssn: true, card: true, bank: true, ids: false, secrets: true, ip: false, money: true, url: false, address: false }));
+  // A key saved before the newer finds existed still loads.
+  assert.equal(R.validateKey({ tool: "redact-restore", entries: [], profile: { options: { email: true, phone: false, ssn: true, card: true, money: true, url: false } } }), true);
   assert.equal(JSON.stringify(p.columns), JSON.stringify({ "Contact Email": "drop", Stage: "mask" }));
   assert.equal(R.validateKey({ tool: "redact-restore", entries: [], profile: p }), true);
 });
@@ -848,4 +850,164 @@ test("a file's name is redacted with the same lists, in any case, and restores",
   assert.equal(R.redactName("best-byte_recap.csv", options, s), "[COMPANY-01]_recap.csv");
   assert.equal(R.redactName("q3-sell-through.csv", options, s), "q3-sell-through.csv");
   assert.equal(R.restore("[PRODUCT-01]-launch-plan.pptx", s.key).text, "Project Kestrel-launch-plan.pptx");
+});
+
+/* ---- Newer finds (2026-11): bank and tax numbers, IDs, keys, IPs, addresses ---- */
+const MORE = { ...ALL, bank: true, ids: true, secrets: true, ip: true, address: true };
+const kinds = (text, opts = MORE) => {
+  const s = session();
+  const out = R.redactText(text, opts, s);
+  return { out, kinds: s.key.entries.map((e) => `${e.kind}:${e.value}`), s };
+};
+
+test("bank and tax numbers: checked by their check digit, or found after a label", () => {
+  const { out, kinds: k } = kinds(
+    "Routing 021000021 acct 123456789012. IBAN GB82 WEST 1234 5698 7654 32 PAYMENT DUE. Card on account ending in 4821. EIN: 12-3456789. ITIN 912-78-1234. FR7630006000011234567890189.",
+  );
+  assert.deepEqual([...k], [
+    "ROUTING:021000021", "ACCOUNT:123456789012", "IBAN:GB82 WEST 1234 5698 7654 32", "ACCOUNT:4821", "TAX-ID:12-3456789", "TAX-ID:912-78-1234", "IBAN:FR7630006000011234567890189",
+  ]);
+  assert.match(out, /IBAN \[IBAN-1\] PAYMENT DUE/, "the IBAN stops where its check digits do");
+  // A failed check digit is not a routing number or an IBAN; a bare nine digits stays an SSN.
+  assert.deepEqual([...kinds("Routing 021000022. IBAN GB83 WEST 1234 5698 7654 32.", { ...MORE, ssn: false }).kinds], []);
+  assert.deepEqual([...kinds("Ref 021000021 filed.").kinds], ["SSN:021000021"]);
+  assert.deepEqual([...kinds("Account 2025 plan. Account manager Dana. Routing table updated. The ABA conference in 2026.").kinds], []);
+});
+
+test("IDs and dates of birth count only after a label", () => {
+  const { kinds: k } = kinds("DOB: 04/12/1988. Born on March 3, 1990. Passport #: X1234567. Member ID: 88812345. Driver's license: D123-4567-8901.");
+  assert.deepEqual([...k], ["DOB:04/12/1988", "DOB:March 3, 1990", "ID-NUMBER:X1234567", "ID-NUMBER:88812345", "ID-NUMBER:D123-4567-8901"]);
+  assert.deepEqual([...kinds("Policy: 2024 update. Member since 2019. Born to run. DOB unknown. Customer: Best Byte. Patient zero.").kinds], []);
+});
+
+test("passwords and access keys: known key shapes and anything after a password label", () => {
+  const keys = [
+    "AKIAIOSFODNN7EXAMPLE",
+    "ghp_" + "a".repeat(36),
+    "xoxb-123456789012-abcdefghij",
+    "sk_live_" + "4eC39HqLyjWDarjtT1zdp7dc",
+    "AIza" + "B".repeat(35),
+    "sk-ant-api03-" + "x".repeat(30),
+    "sk-proj-" + "y".repeat(30),
+    "SG." + "a".repeat(22) + "." + "b".repeat(43),
+    "shpat_" + "0123456789abcdef".repeat(2),
+    "pat-na1-" + "12345678-1234-1234-1234-123456789012",
+    "0123456789abcdef".repeat(2) + "-us21",
+    "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0In0.abcdefghijklmnop",
+  ];
+  for (const key of keys) assert.deepEqual([...kinds(`key ${key} here`).kinds], [`SECRET:${key}`], key);
+  const { out, kinds: k } = kinds('password: Summer2024!\napi_key = "abc123def456"\nAuthorization: Bearer abcdefghijklmnop1234\npostgres://app:hunter22@db.example:5432/x');
+  assert.deepEqual([...k], ["SECRET:Summer2024!", "SECRET:abc123def456", "SECRET:abcdefghijklmnop1234", "SECRET:hunter22"]);
+  assert.match(out, /postgres:\/\/app:\[SECRET-4\]@db\.example/);
+  const pem = "-----BEGIN RSA PRIVATE KEY-----\nMIIEow\nIBAAK\n-----END RSA PRIVATE KEY-----";
+  assert.equal(kinds(`a\n${pem}\nb`).out, "a\n[SECRET-1]\nb");
+  assert.deepEqual([...kinds("The token budget is 4k. Password reset link expired. Key insight: sk-level growth.").kinds], []);
+});
+
+test("IP addresses, but not versions, times or code", () => {
+  const { kinds: k } = kinds("Server 192.168.10.4, range 10.0.0.0/8, host 2001:db8::8a2e:370:7334.");
+  assert.deepEqual([...k], ["IP:192.168.10.4", "IP:10.0.0.0/8", "IP:2001:db8::8a2e:370:7334"]);
+  assert.deepEqual([...kinds("Firmware 10.2.4.1, version 1.2.3.4, v2.0.1.7. Meet at 10:30:00. Use std::vector. 1.2.3.4.5").kinds], []);
+});
+
+test("street addresses only when turned on; a PO box too", () => {
+  const text = "Ship to 1234 Elm Street, Plano, TX 75024 or PO Box 4471. Visit 500 W. Main St. Suite 200 later.";
+  assert.deepEqual([...kinds(text).kinds], ["ADDRESS:1234 Elm Street, Plano, TX 75024", "ADDRESS:PO Box 4471", "ADDRESS:500 W. Main St. Suite 200"]);
+  assert.deepEqual([...kinds(text, { ...MORE, address: false }).kinds], []);
+});
+
+test("a phone number after a label, in any country's format", () => {
+  assert.deepEqual([...kinds("Tel: 020 7946 0958. Mobile 07700 900123. Fax #: (03) 9123 4567.").kinds], ["PHONE:020 7946 0958", "PHONE:07700 900123", "PHONE:(03) 9123 4567"]);
+  assert.deepEqual([...kinds("Tel: 020 7946 0958.", { ...MORE, phone: false }).kinds], []);
+  assert.deepEqual([...kinds("Call ext 4471. Phone: 2024 plan.").kinds], []);
+});
+
+test("every newer find is off unless its option is on, and restores exactly", () => {
+  const text = "Routing 021000021. DOB: 04/12/1988. password: Summer2024! Server 192.168.10.4. 1234 Elm Street";
+  assert.equal(R.redactText(text, { ...ALL, ssn: false }, session()), text);
+  const s = session();
+  const out = R.redactText(text, MORE, s);
+  assert.equal(R.restore(out, s.key).text, text);
+});
+
+test("an amount grouped with spaces is one amount", () => {
+  const s = session();
+  assert.equal(R.redactText("Budget €1 250 000 and $14 250.00 and 2 500 000 USD.", { ...ALL, money: true }, s), "Budget [AMOUNT-1] and [AMOUNT-2] and [AMOUNT-3].");
+});
+
+test("an email address a line break cut in two is found whole; two lines that are not one address are not", () => {
+  for (const cut of ["jane.doe@dalton-\ncomputers.example", "jane.doe@\ndaltoncomputers.example", "jane.doe\n@daltoncomputers.example"]) {
+    const s = session();
+    const out = R.redactText(`Write ${cut} today`, ALL, s);
+    assert.equal(out, "Write [EMAIL-1] today", cut);
+    assert.equal(s.key.entries[0].value, cut.replace(/\s+/g, ""));
+  }
+  assert.equal(R.redactText("Contact\njane@x.example", ALL, session()), "Contact\n[EMAIL-1]");
+  assert.equal(R.redactText("jane@x.example\nThanks", ALL, session()), "[EMAIL-1]\nThanks");
+});
+
+/* ---- Restore: placeholders the AI wrote a little differently ---- */
+test("restore reports placeholders written differently, and restores them only when asked, never inside a link", () => {
+  const s = session();
+  R.redactText("Best Byte and Rachel Kim", { ...ALL, lists: { COMPANY: "Best Byte", PERSON: "Rachel Kim" } }, s);
+  const ans = "[COMPANY-01]. [Company-01]. COMPANY-01. [COMPANY-1]. [COMPANY 01]. [COMPANY‑01]. 【PERSON-01】. https://x.example/PERSON-01 company 01 person 1";
+  const r = R.restore(ans, s.key);
+  assert.equal(r.replaced, 1);
+  assert.deepEqual(JSON.parse(JSON.stringify(r.variants)).map(([v]) => v), ["[Company-01]", "COMPANY-01", "[COMPANY-1]", "[COMPANY 01]", "[COMPANY‑01]", "【PERSON-01】"]);
+  assert.deepEqual([...r.unknown], [], "a variant is not also reported as unknown");
+  const l = R.restore(ans, s.key, true);
+  assert.equal(l.text, "Best Byte. Best Byte. Best Byte. Best Byte. Best Byte. Best Byte. Rachel Kim. https://x.example/PERSON-01 company 01 person 1");
+  assert.equal(l.replaced, 7);
+  assert.equal(l.inLinks, 1);
+  // In a web page, never inside a tag.
+  const h = R.restoreHtml('<p title="[Company-01]">[Company-01]</p>', s.key, true);
+  assert.match(h.text, /<p title="\[Company-01\]">Best Byte<\/p>/);
+});
+
+/* ---- Names that may still be in: lower case, misspellings, first names ---- */
+test("suggestions: a listed name in lower case or misspelled is offered as another name for it", () => {
+  const opts = { ...ALL, lists: { PERSON: "Rachel Kim", COMPANY: "Best Byte" } };
+  const out = R.redactText("thanks rachel. Rachal said the Best Bite numbers are in.", opts, session());
+  const got = R.suggestNames(out, opts).map((x) => `${x.name}|${x.list}|${x.aliasOf}`);
+  assert.ok(got.includes("rachel|PERSON|Rachel Kim"), got);
+  assert.ok(got.includes("Rachal|PERSON|Rachel Kim"), got);
+  assert.ok(got.includes("Best Bite|COMPANY|Best Byte"), got);
+  // Once added as an alias, it is hidden as the listed name and restores as it.
+  const s = session();
+  const opts2 = { ...ALL, lists: { PERSON: "Rachel Kim | rachel | Rachal" } };
+  const out2 = R.redactText("thanks rachel. Rachal said", opts2, s);
+  assert.equal(out2, "thanks [PERSON-01]. [PERSON-01] said");
+  assert.deepEqual([...R.suggestNames(out2, opts2)], []);
+});
+
+test("suggestions: a common first name nobody listed, but not an everyday word", () => {
+  const names = (t) => [...R.suggestNames(t, ALL).map((x) => x.name)];
+  assert.deepEqual(names("Taylor,\nThe numbers are in. Also ask dana about it.\nThanks\nmolly"), ["Taylor", "dana", "molly"]);
+  // Everyday words, a name also written in lower case, and a lower-case name with no greeting or "said" beside it.
+  assert.deepEqual(names("Grace period ends. Summer sales rose. Rose to 4%. Jan numbers.\nthe jordan model shipped"), []);
+});
+
+test("hostile text stays fast: long runs of spaces after a label, unclosed brackets, many key headers", () => {
+  const on = { ...MORE, money: true, url: true, lists: { PERSON: "Rachel Kim" } };
+  const spaces = " ".repeat(100000);
+  const texts = [
+    `account${spaces}x`, `DOB${spaces}x`, `Member ID${spaces}x`, `Tel${spaces}x`, `password${spaces}x`, `EIN${spaces}x`,
+    // A run of spaces once rescanned the whole run from every space in it, with any list in use.
+    `Rachel${spaces}x`,
+    "-----BEGIN PRIVATE KEY-----\n".repeat(3000),
+    `${"a@b" + " ".repeat(50) + "\n"}`.repeat(20000),
+    "1:".repeat(100000),
+  ];
+  for (const t of texts) {
+    const at = performance.now();
+    R.redactText(t, on, session());
+    assert.ok(performance.now() - at < 3000, `${t.slice(0, 20).trim()}… took ${Math.round(performance.now() - at)} ms`);
+  }
+  const s = session();
+  R.redactText("Rachel Kim", on, s);
+  for (const t of [`[A${"  B".repeat(4000)}`, `A${"-B".repeat(50000)}`]) {
+    const at = performance.now();
+    R.restore(t, s.key);
+    assert.ok(performance.now() - at < 3000, `restore took ${Math.round(performance.now() - at)} ms`);
+  }
 });

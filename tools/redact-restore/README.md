@@ -72,6 +72,17 @@ working with the placeholders instead of asking for the real values.
    "Dalton Computers" is on Companies) starts on that list. It leaves out headings, job titles, the header row of a
    spreadsheet, and a word that also appears in lower case ("Rose" when
    "sales rose" is there too), so read the text yourself as well.
+   It also points out three things a capitalized-word check can't see: a
+   listed person's name written in lower case ("thanks rachel"), a listed
+   name misspelled by a letter ("Rachal", "Best Bite"), and a common first
+   name nobody listed, at the start of a sentence ("Taylor,") or in lower
+   case beside a greeting or a "said" ("ask dana", "dana said"). Adding a
+   lower-case or misspelled name puts it on the listed name's line as
+   another name for it (`Rachel Kim | rachel`), so it takes the same
+   placeholder and restores as "Rachel Kim". The first names are the 2,000
+   most common in the US (Social Security's public baby-name records,
+   1950–2005); first names that are everyday words ("Grace", "Summer",
+   "Rose") are never pointed out on their own.
    The saved copy's file name is redacted with the same lists, in any case
    (`kestrel-launch-plan.pptx` saves as `[PRODUCT-01]-launch-plan-redacted.pptx`),
    and a restored file gets its real name back.
@@ -95,6 +106,11 @@ working with the placeholders instead of asking for the real values.
    link or image, an HTML tag, a query string (`?u=[PERSON-01]`) or a domain
    (`[COMPANY-01].example.com`). Your real values never belong in one, and an
    answer that puts them there may have been tampered with.
+   **A placeholder Claude wrote a little differently** (`[Company-01]`,
+   `COMPANY-01` without its brackets, `[COMPANY 01]`, `[COMPANY-1]`) is left
+   as written at first, and the page names each one. If they are yours,
+   click **Restore these too**: they go back like any other, and the same
+   rule about links and tags still applies.
 
 ## One key per client: the profile
 
@@ -118,6 +134,9 @@ file and every chat.
 - **It holds nothing new.** Every listed name is already in the key's
   entries; the profile adds your settings and column headers.
 - **A damaged profile refuses the whole key** rather than half-loading it.
+  An older copy of this page reads a newer key's settings as damaged (it
+  doesn't know the newer automatic finds), so keep one copy of the tool,
+  the newest, and open every key in it.
 - **Save the key again after each redaction** so it learns new names. Keep
   one per client, outside Claude Workspace.
 - **Switching clients:** click **Start over** (or reload the page), then open
@@ -246,8 +265,13 @@ know first:
   drawn, not sentences, so the tool rebuilds lines and spaces from positions.
   It's usually right, but a narrow table cell can print one email address
   over two lines, and Word's tracked changes can print a deleted word flush
-  against the next one. A listed name glued on like that is still caught; an
-  address broken over two lines loses its name but keeps the rest.
+  against the next one. A listed name glued on like that is still caught,
+  and so is an email address broken over two lines when the two halves only
+  make an address together (`jane.doe@dalton-` over `computers.com`).
+- **Best of all, don't redact the PDF.** Most PDFs were saved from a Word
+  or PowerPoint file. Redact that file instead: you get a redacted copy with
+  its layout, and can make a fresh PDF from it if you need one. Use this
+  option when the PDF is all you have.
 
 It refuses password-protected PDFs, and says when a PDF is a scan: pictures
 of pages, with no text inside to read. It doesn't read text in pictures
@@ -272,16 +296,48 @@ On by default:
 - **Payment card numbers**, checked with the Luhn checksum so an order number
   isn't mistaken for a card, and found even when an expiry date, a security
   code or another number sits right beside them, or two cards share a line.
+- **Bank and tax numbers**: a US routing number after a word like
+  "routing", "ABA" or "wire" (and only if it passes the routing check
+  digit, so `[ROUTING-1]` is never an SSN in disguise); an IBAN, with or
+  without spaces, checked the same way; an account number after "account",
+  "acct" or "a/c" (six digits or more, or the last four after "ending in");
+  an EIN after "EIN" or "Tax ID"; and an ITIN written with dashes or
+  spaces (`9XX-7X-XXXX`).
+- **ID numbers and dates of birth, after a label**: `DOB: 04/12/1988`,
+  `Born on March 3, 1990`, `Passport #: X1234567`, `Member ID: 88812345`,
+  `Driver's license: …`. Without the label, a date or a number is left
+  alone, and "Policy: 2024" stays a year.
+- **Passwords and access keys**: anything after `password:`, `api_key =`,
+  `token:` and their kin, a `Bearer` token, the password inside a
+  connection address (`postgres://app:[SECRET-1]@db.example`), a private
+  key, and keys with a shape their service publishes (AWS, GitHub, GitLab,
+  Slack, Stripe, Google, Anthropic, OpenAI, SendGrid, Shopify, HubSpot,
+  Mailchimp, Meta, signed web tokens). Keep keys out of AI chats anyway:
+  this only catches the ones you didn't notice.
+- **IP addresses**, both kinds (`192.168.10.4`, `2001:db8::8a2e:370:7334`),
+  but not a time (`10:30:00`), code (`std::vector`) or a number right after
+  "version", "firmware", "build" or "v" ("firmware 10.2.4.1"). A four-part
+  version number with no such word before it is hidden as an address; it
+  restores exactly.
+- **A phone number after a label in any country's format**: `Tel: 020 7946
+  0958`, `Mobile 07700 900123`.
 
-Off by default: **money amounts** and **web links**. Turn them on when the
-amounts or the links are themselves the sensitive part.
+Off by default: **money amounts**, **web links** and **street addresses**.
+Turn them on when the amounts, the links or the addresses are themselves the
+sensitive part.
 
 - **Money** means a number with a currency before or after it: `$14,250.00`,
-  `US$900`, `€5,000`, `€1.250.000`, `£1.2M`, `USD 900`, `900 USD`,
+  `US$900`, `€5,000`, `€1.250.000`, `€1 250 000`, `£1.2M`, `USD 900`, `900 USD`,
   `12K Dollars`, `2.5 million euros`. A number with no currency (`12k units`, `18.4%`,
   `5 pounds`) is left alone.
 - **Web links** means addresses starting `http://`, `https://` or `www.`, in
   capitals or not.
+- **Street addresses** means a number, a capitalized street name and its
+  kind (`1234 Elm Street`, `500 W. Main St. Suite 200`), with a following
+  `Plano, TX 75024` when there is one, and a PO box. It's off because store
+  and office addresses are often the point of the work; turn it on for a
+  person's address. It can also catch a phrase shaped like an address ("3
+  Big Ideas Way"), which costs a placeholder but restores exactly.
 
 **A listed name run together is caught too.** "Best Byte" on a list also
 hides `BestByte`, `Best-Byte`, `Best_Byte` and `Best.Byte`, so a hashtag, a
@@ -324,21 +380,21 @@ a pivot export's column names are often the very names you meant to hide.
 It is a safety net, not a guarantee. Pattern matching misses:
 
 - names nobody listed that "Names that may still be in" didn't point out
-  (a name written in lower case, or one that is also an everyday word), and
-  nicknames or initials you didn't add as an alias (`Rachel Kim | Rach | RK`);
+  (a name that is also an everyday word, a less common name written in lower
+  case, or one with no greeting or "said" beside it), and nicknames or
+  initials you didn't add as an alias (`Rachel Kim | Rach | RK`);
 - a name part that is an everyday word ("Will", "Grant") or two letters
   long ("Li") on its own, unless you add it as an alias;
 - anything inside a picture (which is why pictures in Office files become gray
   boxes by default), including a scanned PDF;
-- a value a PDF itself broke across two lines, such as an email address in a
-  narrow table cell (its name is caught, the rest of the address is not; see
-  the PDF section above);
+- an email address a PDF broke inside the part before the `@`, where the
+  second line is an address on its own (`jane.do` over `e@dalton.com`):
+  the second line is hidden, the first is not;
 - context that identifies someone without naming them ("the West regional
   buyer who just moved from Seattle");
-- phone numbers from outside the US written without their country code, and
-  ID numbers other than US Social Security numbers;
-- an amount grouped with spaces (`€1 250 000`): only the first group is
-  hidden.
+- phone numbers from outside the US written with neither their country
+  code nor a label (`Tel:`), and ID numbers and dates of birth with no label;
+- a password or key with no label and no published shape.
 
 **Encoded email files are refused, not guessed at.** Many saved emails
 (`.eml`) store their text encoded (base64 or quoted-printable) or carry

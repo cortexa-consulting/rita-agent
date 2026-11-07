@@ -9,7 +9,7 @@
      cannot stop a browser extension or browser translation; see README.) The two hashes
      pin the page's own style and script; run update-csp.mjs after editing
      either. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-U5ZQDFDpnwE6X5w656ymPVRBn9FXgKjAPMcU4MXKgWI='; style-src 'sha256-gGy+7TXM9L+xZylAnm/NBS9tMoaPKriefZOnqAQJs1w='; connect-src 'none'; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-UFlcQNtvbCWFsaVBY+9yxkkhUYM7qLaw9bOuec+DV10='; style-src 'sha256-gGy+7TXM9L+xZylAnm/NBS9tMoaPKriefZOnqAQJs1w='; connect-src 'none'; form-action 'none'; base-uri 'none'">
 <meta name="referrer" content="no-referrer">
 <!-- Browser translation would send the page, originals included, to a
      translation service: the one channel the policy above cannot close. -->
@@ -461,8 +461,13 @@ button.link::before { display: none; }
           <label class="check"><input type="checkbox" id="opt-phone" checked> Phone numbers</label>
           <label class="check"><input type="checkbox" id="opt-ssn" checked> Social Security numbers</label>
           <label class="check"><input type="checkbox" id="opt-card" checked> Payment card numbers</label>
+          <label class="check"><input type="checkbox" id="opt-bank" checked> Bank and tax numbers <span class="hint">(routing numbers, IBANs, account numbers and EINs after a label)</span></label>
+          <label class="check"><input type="checkbox" id="opt-ids" checked> ID numbers and dates of birth after a label <span class="hint">(DOB:, Passport:, Member #:)</span></label>
+          <label class="check"><input type="checkbox" id="opt-secrets" checked> Passwords and access keys <span class="hint">(API keys, tokens, anything after "password:")</span></label>
+          <label class="check"><input type="checkbox" id="opt-ip" checked> IP addresses</label>
           <label class="check"><input type="checkbox" id="opt-money"> Money amounts <span class="hint">(leave off if the AI needs the numbers to analyze)</span></label>
           <label class="check"><input type="checkbox" id="opt-url"> Web links <span class="hint">(internal links often name a client or a project)</span></label>
+          <label class="check"><input type="checkbox" id="opt-address"> Street addresses <span class="hint">(a person's address; leave off when store addresses are the point)</span></label>
         </fieldset>
       </details>
     </div>
@@ -479,7 +484,7 @@ button.link::before { display: none; }
       <h3><span class="num" aria-hidden="true">4</span>Check it, then save</h3>
         <div id="suggest" class="suggest hidden">
         <h3>Names that may still be in</h3>
-        <p class="hint">The tool saw these capitalized words and didn't hide them. Add the ones that are names, and it redacts again; the rest are fine to leave.</p>
+        <p class="hint">The tool saw these and didn't hide them: capitalized words, a listed name written in lower case or misspelled, and common first names. Add the ones that are names, and it redacts again (a listed name's other spelling joins its line, so it restores as that name); the rest are fine to leave.</p>
         <ul id="suggest-rows" class="suggest-rows"></ul>
         <p id="suggest-more" class="hint"></p>
         <div class="row"><button type="button" id="suggest-dismiss">Dismiss all</button></div>
@@ -535,6 +540,7 @@ button.link::before { display: none; }
       </div>
       <p class="hint">Paste and restore reads what you copied from Claude, restores it, and copies the result, ready to paste.</p>
       <p class="status" id="restore-status" role="status" aria-live="polite"></p>
+      <div class="row hidden" id="loose-row"><button type="button" id="btn-restore-loose">Restore these too</button></div>
     </div>
 
     <div id="restore-out" class="substep hidden">
@@ -562,7 +568,7 @@ button.link::before { display: none; }
 /* RedactCore: the logic, free of the page so it can be tested in Node */
 /* ------------------------------------------------------------------ */
 const RedactCore = (() => {
-  const KIND_LABEL = { TERM: "Your list", COMPANY: "Company", PERSON: "Person", PRODUCT: "Product", PROJECT: "Project or topic", TOOL: "Tool or system", EMAIL: "Email", PHONE: "Phone", SSN: "SSN", CARD: "Card", AMOUNT: "Amount", LINK: "Link", COLUMN: "Masked column" };
+  const KIND_LABEL = { TERM: "Your list", COMPANY: "Company", PERSON: "Person", PRODUCT: "Product", PROJECT: "Project or topic", TOOL: "Tool or system", EMAIL: "Email", PHONE: "Phone", SSN: "SSN", CARD: "Card", AMOUNT: "Amount", LINK: "Link", ROUTING: "Routing number", ACCOUNT: "Account number", IBAN: "IBAN", "TAX-ID": "Tax ID", DOB: "Date of birth", "ID-NUMBER": "ID number", SECRET: "Password or key", IP: "IP address", ADDRESS: "Street address", COLUMN: "Masked column" };
 
   /**
    * The named lists, in the order they win when one name sits in two lists.
@@ -576,7 +582,8 @@ const RedactCore = (() => {
   // A number, with thousands separators (1,250,000 or 1.250.000) or decimals,
   // and an optional size word. It never stops partway through the digits
   // ($1,234.5678 is one amount). Case is ignored (the pattern carries "i").
-  const MONEY = String.raw`(?:\d{1,3}(?:[,.]\d{3})+(?:[.,]\d+)?|\d+(?:[.,]\d+)?)(?!\d)(?:\s?(?:k|m|bn|b|million|billion|thousand)(?![a-z]))?`;
+  // Grouped with spaces too, as much of Europe writes it: €1 250 000.
+  const MONEY = String.raw`(?:\d{1,3}(?:[,.]\d{3})+(?:[.,]\d+)?|\d{1,3}(?:[ \u00A0\u202F]\d{3})+(?:[.,]\d+)?|\d+(?:[.,]\d+)?)(?!\d)(?:\s?(?:k|m|bn|b|million|billion|thousand)(?![a-z]))?`;
 
   const PATTERNS = {
     // Unicode-aware, so an address on a domain like müller.example is found whole.
@@ -613,6 +620,212 @@ const RedactCore = (() => {
     // closing punctuation is trimmed off afterwards (see findMatches).
     LINK: /\b(?:https?:\/\/|www\.)[^\s<>"')\]]+/gi,
   };
+
+  /* ---- Detectors that read a value's surroundings, or check its digits ---- */
+  // Each finds one kind of value. Many only count a value that sits after a
+  // label ("Routing:", "DOB", "acct"), since the digits alone could be
+  // anything; a number with a check digit (a routing number, an IBAN) must
+  // also pass it. `group` is the part that is hidden (the label stays), and
+  // `fit` may shorten a find or turn it down. Written for this tool from the
+  // public formats: no other project's code is copied here.
+  const SP = String.raw`[^\S\r\n]`; // a space or tab, never a line break
+  // Gaps between a label and its value are a few spaces at most. Bounded, so
+  // a hostile file's long run of spaces after "account" can't make the
+  // matcher try every split of it (a slow, quadratic search).
+  const GAP = String.raw`${SP}{0,4}`;
+  const LABEL_END = String.raw`\.?(?:${GAP}(?:number|num|no\.?|#))?${GAP}[:#=-]?${GAP}`;
+  const MONTH = String.raw`(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\.?`;
+  const DATE_RE = String.raw`\d{1,2}[/.-]\d{1,2}[/.-](?:\d{4}|\d{2})(?!\d)|\d{4}-\d{1,2}-\d{1,2}(?!\d)|${MONTH}${SP}+\d{1,2}(?:st|nd|rd|th)?,?${SP}+\d{4}|\d{1,2}(?:st|nd|rd|th)?${SP}+${MONTH},?${SP}+\d{4}`;
+  const digitsIn = (s) => s.replace(/\D/g, "").length;
+
+  /** The ABA check on a US bank routing number: 3·(1,4,7) + 7·(2,5,8) + (3,6,9) ≡ 0 (mod 10). */
+  function abaOk(n) {
+    if (!/^\d{9}$/.test(n)) return false;
+    const d = [...n].map(Number);
+    return (3 * (d[0] + d[3] + d[6]) + 7 * (d[1] + d[4] + d[7]) + d[2] + d[5] + d[8]) % 10 === 0;
+  }
+  /** The ISO 13616 check on an IBAN (mod 97 of its digits, country moved to the end). */
+  function ibanOk(s) {
+    const v = s.replace(/ /g, "");
+    if (!/^[A-Z]{2}\d{2}[A-Z0-9]{11,30}$/.test(v)) return false;
+    let r = 0;
+    for (const ch of v.slice(4) + v.slice(0, 4)) {
+      const n = ch <= "9" ? ch : String(ch.charCodeAt(0) - 55);
+      for (const c of n) r = (r * 10 + (c.charCodeAt(0) - 48)) % 97;
+    }
+    return r === 1;
+  }
+  /** An IPv6 address, not a time of day (10:30:00) or a C++ name (a::b). */
+  function ipv6Ok(s) {
+    const doubles = s.split("::").length - 1;
+    if (doubles > 1) return false;
+    const groups = s.split(":").filter(Boolean);
+    if (groups.length < 2 || groups.join("").length < 6 || groups.some((g) => g.length > 4)) return false;
+    return doubles === 1 ? groups.length <= 7 : groups.length === 8;
+  }
+
+  const DETECTORS = [
+    // ---- Bank and tax numbers -----------------------------------------
+    // An IBAN, with or without its spaces, that passes its check. A word in
+    // capitals after it can look like more of it, so it is shortened group by
+    // group until it passes (or is too short to be one).
+    {
+      opt: "bank", kind: "IBAN",
+      re: /(?<![A-Za-z0-9])[A-Z]{2}\d{2}(?: ?[A-Z0-9]){11,40}(?![A-Za-z0-9])/g,
+      fit(v) {
+        for (let w = v; w.replace(/ /g, "").length >= 15; w = w.replace(/ ?[A-Z0-9]$/, "").replace(/ $/, "")) if (ibanOk(w)) return w.length;
+        return 0;
+      },
+    },
+    // A US routing number: nine digits that pass the ABA check, close after a
+    // word that says so. Without the word it stays a nine-digit number (an
+    // SSN, if Social Security numbers are on).
+    {
+      opt: "bank", kind: "ROUTING", group: 1,
+      re: new RegExp(String.raw`\b(?:routing|ABA|RTN|R/T|transit|wire|ACH)\b[^\d\r\n]{0,30}?(?<!\d)(\d{9})(?!\d)`, "gid"),
+      fit: (v) => (abaOk(v) ? v.length : 0),
+    },
+    // An account number after "account", "acct" or "a/c": six to seventeen
+    // digits ("Account 2025" is a year), or the last four after "ending in".
+    {
+      opt: "bank", kind: "ACCOUNT", group: 1,
+      re: new RegExp(String.raw`\b(?:account|acct|a/c)${LABEL_END}((?:ending${SP}{1,4}in${SP}{1,4})?\d(?:[ -]?\d){3,16})(?!\d)`, "gid"),
+      fit(v) {
+        const ending = /^ending/i.exec(v);
+        if (ending) return digitsIn(v) === 4 ? v.length : 0;
+        return digitsIn(v) >= 6 ? v.length : 0;
+      },
+      start: (v) => (/^ending/i.test(v) ? v.search(/\d/) : 0),
+    },
+    // An EIN after a label (on its own it is just nine digits) ...
+    {
+      opt: "bank", kind: "TAX-ID", group: 1,
+      re: new RegExp(String.raw`\b(?:F?EIN|TIN|tax${SP}?ID|tax${SP}+identification|employer${SP}+identification)${LABEL_END}(\d{2}-?\d{7})(?!\d)`, "gid"),
+    },
+    // ... and an ITIN, which has a shape of its own: 9XX-7X-XXXX and kin.
+    {
+      opt: "bank", kind: "TAX-ID",
+      re: /(?<![\d-])9\d{2}([- ])(?:5\d|6[0-5]|7\d|8[0-8]|9[0-2]|9[4-9])\1\d{4}(?![\d-])/g,
+    },
+    // ---- ID numbers and dates of birth, after a label ------------------
+    {
+      opt: "ids", kind: "DOB", group: 1,
+      re: new RegExp(String.raw`(?:\bDOB\b|\bD\.O\.B\.?|\bdate${SP}+of${SP}+birth\b|\bbirth${SP}?date\b|\bbirthday\b|\bborn(?:${SP}+on)?\b)${GAP}[:#-]?${GAP}(${DATE_RE})`, "gid"),
+    },
+    {
+      opt: "ids", kind: "ID-NUMBER", group: 1,
+      re: new RegExp(String.raw`\b(?:passport|driver'?s?${SP}+licen[cs]e|DL|licen[cs]e|member(?:ship)?|employee|patient|policy|loyalty|customer|student|badge|national${SP}+ID|social${SP}+insurance|SIN|NIN|NHS|medicare|medicaid)(?:${SP}{1,4}(?:ID|number|num|no\.?))?${GAP}(?:#${GAP}:|[:#])${GAP}([A-Z0-9][A-Z0-9-]{3,19})(?![A-Za-z0-9-])`, "gid"),
+      // Five digits, or three among letters (X1234567): "Policy: 2024" is a year.
+      fit: (v) => (digitsIn(v) >= 5 || (digitsIn(v) >= 3 && /[A-Za-z]/.test(v)) ? v.length : 0),
+    },
+    // ---- Passwords and access keys -------------------------------------
+    // Keys with a shape their service publishes: AWS, GitHub, GitLab, Slack,
+    // Stripe, Google, Anthropic, OpenAI, SendGrid, Shopify, HubSpot,
+    // Mailchimp, Meta (Facebook) and a signed web token (JWT).
+    {
+      opt: "secrets", kind: "SECRET",
+      re: /(?<![A-Za-z0-9_-])(?:(?:AKIA|ASIA|ABIA|ACCA)[A-Z0-9]{16}|gh[pousr]_[A-Za-z0-9]{36,255}|github_pat_[A-Za-z0-9_]{22,255}|glpat-[A-Za-z0-9_-]{20,}|xox[abposr]-[A-Za-z0-9-]{10,}|[rs]k_(?:live|test)_[A-Za-z0-9]{16,}|AIza[0-9A-Za-z_-]{35}|sk-ant-[A-Za-z0-9_-]{20,}|sk-(?:proj-|svcacct-)?[A-Za-z0-9_-]{20,}|SG\.[A-Za-z0-9_-]{16,}\.[A-Za-z0-9_-]{16,}|shp(?:at|ca|pa|ss)_[a-fA-F0-9]{32}|pat-(?:na|eu)\d-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|[0-9a-f]{32}-us\d{1,2}|EAA[A-Za-z0-9]{60,}|ya29\.[A-Za-z0-9_-]{20,}|eyJ[A-Za-z0-9_-]{8,}\.eyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,})(?![A-Za-z0-9_-])/g,
+    },
+    // A private key, whole.
+    {
+      opt: "secrets", kind: "SECRET",
+      re: /-----BEGIN[A-Z ]{0,40}PRIVATE KEY(?: BLOCK)?-----[\s\S]{0,8000}?-----END[A-Z ]{0,40}PRIVATE KEY(?: BLOCK)?-----/g,
+    },
+    // Whatever follows "password:", "api_key =", "token:" and their kin.
+    {
+      opt: "secrets", kind: "SECRET", group: 2,
+      re: new RegExp(String.raw`\b(?:password|passwd|pwd|passcode|pass${SP}?phrase|PIN|api[_ -]?key|secret(?:[_ -]?key)?|client[_ -]?secret|access[_ -]?(?:key|token)|auth[_ -]?token|token)\b["']?${GAP}[:=]${GAP}(["']?)([^\s"']{4,200})\1`, "gid"),
+    },
+    {
+      opt: "secrets", kind: "SECRET", group: 1,
+      re: /\bBearer[^\S\r\n]+([A-Za-z0-9._~+/-]{16,}=*)/gd,
+    },
+    // The password inside a connection address: scheme://user:PASSWORD@host.
+    {
+      opt: "secrets", kind: "SECRET", group: 1,
+      re: /\b[a-z][a-z0-9+.-]{1,20}:\/\/[^\s:@/]{1,100}:([^\s@/]{1,200})@/gid,
+    },
+    // ---- IP addresses ----------------------------------------------------
+    {
+      opt: "ip", kind: "IP",
+      re: /(?<![\p{L}\p{N}.])(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\.){3}(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(?:\/\d{1,2})?(?!\p{N}|\.\p{N})/gu,
+      // "Firmware 10.2.4.1" and "version 1.2.3.4" are versions, not addresses.
+      not: /\b(?:version|ver|firmware|build|release|update|patch|v)\.?[^\S\r\n]*$/i,
+    },
+    {
+      opt: "ip", kind: "IP",
+      re: /(?<![\p{L}\p{N}:.])(?:[0-9A-Fa-f]{0,4}:){2,7}[0-9A-Fa-f]{0,4}(?![\p{L}\p{N}:])/gu,
+      fit: (v) => (ipv6Ok(v) ? v.length : 0),
+    },
+    // ---- Street addresses (off by default) -------------------------------
+    // A number, a capitalized street name and its kind (Street, Ave, Blvd…),
+    // then a suite and a "City, ST 12345" when they follow.
+    {
+      opt: "address", kind: "ADDRESS",
+      re: new RegExp(
+        String.raw`(?<![\p{L}\p{N}])\d{1,6}[A-Z]?(?:-\d{1,4})?${SP}+(?:(?:N|S|E|W|NE|NW|SE|SW|North|South|East|West)\.?${SP}+)?(?:(?:\d{1,3}(?:st|nd|rd|th)|\p{Lu}[\p{L}'.-]*)${SP}+){1,4}` +
+          String.raw`(?:Street|St|Avenue|Ave|Road|Rd|Boulevard|Blvd|Drive|Dr|Lane|Ln|Way|Court|Ct|Place|Pl|Parkway|Pkwy|Highway|Hwy|Circle|Cir|Terrace|Ter|Trail|Trl|Square|Sq|Loop|Plaza|Freeway|Fwy|Pike|Expressway|Expy)\b\.?` +
+          String.raw`(?:${SP}+(?:N|S|E|W|NE|NW|SE|SW)\b\.?)?(?:,?${SP}*(?:Suite|Ste|Apt|Apartment|Unit|Floor|Fl|Bldg|Building|#)\.?${SP}*#?${SP}*[A-Z0-9-]{1,6}\b)?` +
+          String.raw`(?:,${SP}*\p{Lu}[\p{L}.' -]{1,30}?,?${SP}+[A-Z]{2}(?:${SP}+\d{5}(?:-\d{4})?)?(?![\p{L}\p{N}]))?`,
+        "gu",
+      ),
+    },
+    { opt: "address", kind: "ADDRESS", re: /\bP\.?[^\S\r\n]?O\.?[^\S\r\n]+Box[^\S\r\n]+\d{1,7}\b/gi },
+    // ---- Phone numbers after a label, in any country's format ------------
+    // "Tel: 020 7946 0958", "Mobile 07700 900123": seven to fifteen digits.
+    {
+      opt: "phone", kind: "PHONE", group: 1, rank: 2,
+      re: new RegExp(String.raw`\b(?:phone|tel|telephone|mobile|cell|cellphone|fax|whatsapp|ph)\b${LABEL_END}(\+?\(?\d[\d ().-]{5,24}\d)(?!\d)`, "gid"),
+      fit(v) {
+        let p = v;
+        while (digitsIn(p) > 15) p = p.replace(/(?:[ .-])?\(?\d{1,5}\)?$/, "");
+        return digitsIn(p) >= 7 ? p.length : 0;
+      },
+    },
+    // ---- An email address a line break cut in two ------------------------
+    // A PDF's narrow table cell prints jane.doe@dalton- / computers.com over
+    // two lines. Joined, it must be a whole address, and neither half may be
+    // one on its own ("Contact" over "jane@x.com" is not one address).
+    {
+      opt: "email", kind: "EMAIL", rank: 1,
+      re: /(?<![\p{L}\p{N}._%+-])[\p{L}\p{N}._%+-]+(?:@[\p{L}\p{N}.-]*)?[^\S\r\n]*\r?\n[^\S\r\n]*[\p{L}\p{N}._%+@-]+/gu,
+      fit(v) {
+        const [a, b] = v.split(/[^\S\r\n]*\r?\n[^\S\r\n]*/);
+        const whole = /^[\p{L}\p{N}._%+-]+@[\p{L}\p{N}-]+(?:\.[\p{L}\p{N}-]+)*\.\p{L}{2,}$/u;
+        if (!whole.test(a + b) || whole.test(a) || whole.test(b)) return 0;
+        if (!a.includes("@") && !b.startsWith("@")) return 0;
+        return v.length;
+      },
+      join: true,
+    },
+  ];
+
+  /** Every find the detectors above make, for the options that are on. */
+  function detect(text, options, found) {
+    for (const d of DETECTORS) {
+      if (!options[d.opt]) continue;
+      for (const m of text.matchAll(d.re)) {
+        let [start, end] = d.group ? m.indices[d.group] || [] : [m.index, m.index + m[0].length];
+        if (start === undefined) continue;
+        if (d.not && d.not.test(text.slice(Math.max(0, start - 20), start))) continue;
+        let value = text.slice(start, end);
+        if (d.fit) {
+          const len = d.fit(value);
+          if (!len) continue;
+          end = start + len;
+          value = text.slice(start, end);
+        }
+        if (d.start) {
+          start += d.start(value);
+          value = text.slice(start, end);
+        }
+        // A cut address is kept in the key whole, so it shares its placeholder
+        // with the same address written on one line.
+        const keep = d.join ? value.replace(/\s+/g, "") : value;
+        found.push({ start, end, kind: d.kind, value: keep, canonical: keep, label: "", rank: d.rank === undefined ? 1 : d.rank });
+      }
+    }
+  }
 
   function luhn(digits) {
     let sum = 0;
@@ -801,7 +1014,10 @@ const RedactCore = (() => {
       if (/^\s*\+(?!1)/.test(value)) return `+${d}`;
       return d.length === 11 && d.startsWith("1") ? d.slice(1) : d;
     }
-    if (kind === "CARD" || kind === "SSN") return value.replace(/\D/g, "");
+    if (kind === "CARD" || kind === "SSN" || kind === "ROUTING" || kind === "ACCOUNT" || kind === "TAX-ID") return value.replace(/\D/g, "");
+    if (kind === "IBAN") return value.replace(/ /g, "");
+    // A key or password is exact: "Abc123" and "abc123" are two passwords.
+    if (kind === "SECRET") return value;
     return value.trim().toLowerCase();
   }
 
@@ -933,10 +1149,12 @@ const RedactCore = (() => {
             continue;
           }
           const key = ci ? fold(text[j]) : unify(text[j]);
-          // One space in a term matches any run of spaces, line breaks or invisible characters.
-          if (key === " ") while (j + 1 < text.length && (SPACE.test(text[j + 1]) || INVISIBLE.test(text[j + 1]))) j++;
           node = node.get(key);
           if (!node) break;
+          // One space in a term matches any run of spaces, line breaks or
+          // invisible characters. Skipped only once the term has a space here:
+          // skipping first rescanned a long run of spaces from every space in it.
+          if (key === " ") while (j + 1 < text.length && (SPACE.test(text[j + 1]) || INVISIBLE.test(text[j + 1]))) j++;
           if (node.term && endsHere(text, j, node.term)) {
             best = node.term;
             bestEnd = j + 1;
@@ -964,6 +1182,9 @@ const RedactCore = (() => {
           continue;
         }
         if (kind === "LINK") end -= /[.,;:!?]*$/.exec(m[0])[0].length; // "see www.x.com." keeps its full stop
+        // postgres://app:hunter22@db.example: with keys on, that is a password
+        // and a host, not the address hunter22@db.example.
+        if (kind === "EMAIL" && options.secrets && /:\/\/[^\s:@/]{1,100}:$/.test(text.slice(Math.max(0, start - 110), start))) continue;
         if (kind === "PHONE_INTL") {
           // A date or a number written after it isn't part of it: drop
           // trailing groups until it fits in fifteen digits.
@@ -975,6 +1196,7 @@ const RedactCore = (() => {
         found.push({ start, end, kind: kind === "PHONE_INTL" ? "PHONE" : kind, value: text.slice(start, end), canonical: text.slice(start, end), label: "", rank: kind === "EMAIL" || kind === "LINK" ? 1 : 2 });
       }
     }
+    detect(text, options, found);
     // Earliest first; at the same start the LONGER match wins, so a listed
     // first name can never replace half of the email address it begins.
     found.sort((a, b) => a.start - b.start || b.end - b.start - (a.end - a.start) || a.rank - b.rank);
@@ -1044,6 +1266,127 @@ const RedactCore = (() => {
    * `opts.csv` skips the header row; "Sheet:" lines (a workbook's text) skip
    * the header row under them.
    */
+  /**
+   * Common US first names, to point out a name nobody listed: "ask dana",
+   * or "Dana" at the start of a sentence. Suggestions only: nothing here is
+   * ever hidden on its own. The 2,000 most given from 1950 to 2005 (the
+   * people at work today), names of three letters or more, from the Social
+   * Security Administration's baby-name files (public domain, via the CC0
+   * "babynames" data set).
+   */
+  const FIRST_NAMES = new Set(
+    "Aaliyah Aaron Abbey Abbie Abby Abel Abigail Abraham Ada Adam Adan Addison Adele Adolfo Adrian Adriana Adrianna Adrianne Adrienne Agnes Agustin Ahmad Ahmed Aida Aidan Aiden Aileen Aimee Aisha Alaina Alan Alana Alanna Alayna Albert Alberta Alberto Aldo Alec Alecia Alejandra Alejandro Alex Alexa Alexander Alexandra Alexandria Alexia Alexis Alexus Alfonso Alfred Alfredo Ali Alice Alicia Alina Alisa Alisha Alison Alissa Aliyah Allan Allen Allie Allison Allyson Alma Alondra Alonzo Alphonso Alton Alvaro Alvin Alycia Alysha Alysia Alyson Alyssa Amanda Amari Amaya Amber Amelia Amie Amir Amos Amy Ana Anahi Anastasia Andre Andrea Andres Andrew Andria Andy Angel Angela Angelia Angelica Angelina Angeline Angelique Angelo Angie Anika Anissa Anita Ann Anna Annabelle Annamarie Anne Annemarie Annette Annie Annika Annmarie Anthony Antoine Antoinette Anton Antonia Antonio Antony Antwan April Araceli Archie Ariana Arianna Ariel Arielle Arlene Armando Arnold Aron Arthur Arturo Ashanti Ashlee Ashleigh Ashley Ashlie Ashly Ashlyn Ashlynn Ashton Asia Athena Aubrey Audra Audrey August Aurora Austin Autumn Ava Avery Axel Ayanna Ayden Baby Bailey Barbara Barrett Barry Bart Baylee Beatrice Beatriz Beau Becky Belinda Ben Benita Benito Benjamin Bennett Bennie Benny Bernadette Bernard Bernice Bert Bertha Bessie Beth Bethany Betsy Betty Beverly Bianca Bill Billie Billy Blaine Blair Blake Blanca Bob Bobbi Bobbie Bobby Bonita Bonnie Boyd Brad Braden Bradford Bradley Bradly Brady Branden Brandi Brandie Brandon Brandy Brant Braxton Brayden Breana Breanna Breanne Brenda Brendan Brenden Brendon Brenna Brennan Brent Brenton Bret Brett Bria Brian Briana Brianna Brianne Brice Bridget Bridgett Bridgette Brigitte Britney Brittani Brittany Brittney Brock Brody Brook Brooke Brooklyn Brooks Bruce Bryan Bryanna Bryant Bryce Brynn Bryon Bryson Buddy Byron Cade Caden Caitlin Caitlyn Caleb Callie Calvin Camden Cameron Camila Camilla Camille Camron Camryn Candace Candice Candy Cara Caren Carey Cari Carina Carissa Carl Carla Carlene Carley Carlie Carlo Carlos Carlton Carly Carmela Carmen Carol Carole Carolina Caroline Carolyn Carrie Carroll Carson Carter Cary Caryn Casandra Casey Cassandra Cassidy Cassie Catalina Catherine Cathleen Cathryn Cathy Catrina Cayla Cecelia Cecil Cecilia Cedric Celeste Celia Celina Cesar Chad Chadwick Chance Chandler Chandra Chanel Chantal Chantel Charity Charlene Charles Charlie Charlotte Charmaine Chase Chasity Chastity Chaz Chelsea Chelsey Chelsie Cheri Cherie Cheryl Chester Cheyanne Cheyenne Chloe Chris Christa Christal Christen Christi Christian Christiana Christie Christin Christina Christine Christopher Christy Chrystal Chuck Ciara Ciera Cierra Cindi Cindy Claire Clara Clare Clarence Clarissa Clark Claude Claudette Claudia Clay Clayton Cleveland Clifford Clifton Clint Clinton Clyde Cody Colby Cole Coleen Coleman Colette Colin Colleen Collin Colton Conner Connie Connor Conor Conrad Constance Consuelo Cooper Cora Corbin Corey Cori Corina Corinne Cornelius Cornell Corrine Cortney Cory Courtney Craig Cristal Cristian Cristina Cristy Cruz Crystal Cullen Curt Curtis Cynthia Cyrus Daisy Dakota Dale Dalia Dallas Dalton Damaris Damian Damien Damion Damon Dan Dana Dane Danette Danial Daniel Daniela Daniella Danielle Danna Danny Dante Daphne Dara Darby Darcy Daren Darian Darien Darin Darius Darla Darlene Darnell Darrel Darrell Darren Darrick Darrin Darryl Darwin Daryl Dave David Davis Davon Dawn Dawson Dayna Dean Deana Deandre Deangelo Deann Deanna Deanne Debbie Debby Debora Deborah Debra Dee Deena Deidra Deidre Deirdre Deja Delaney Delbert Delia Delilah Della Delores Deloris Demarcus Demetria Demetrius Dena Denice Denis Denise Dennis Denny Deon Derek Derick Derrick Deshawn Desirae Desiree Desmond Destinee Destiny Devan Deven Devin Devon Devonte Devyn Dewayne Dewey Dexter Diamond Diana Diane Diann Dianna Dianne Diego Dillon Dina Dion Dionne Dirk Dixie Dolores Domingo Dominic Dominick Dominique Don Dona Donald Donna Donnell Donnie Donny Donovan Donte Dora Doreen Dorian Doris Dorothy Doug Douglas Doyle Drake Drew Duane Dulce Duncan Dustin Dusty Dwayne Dwight Dylan Earl Earnest Ebony Eddie Eddy Eden Edgar Edith Edmond Edmund Edna Eduardo Edward Edwin Efrain Eileen Elaina Elaine Elbert Eleanor Elena Eli Eliana Elias Elijah Elisa Elisabeth Elise Elisha Elissa Eliza Elizabeth Ella Ellen Ellie Elliot Elliott Ellis Elmer Elsa Elsie Elton Elvin Elvira Elvis Elyse Emanuel Emely Emerson Emilee Emilia Emilie Emilio Emily Emma Emmanuel Emmett Enrique Eric Erica Erich Erick Ericka Erik Erika Erin Ernest Ernestine Ernesto Ernie Ervin Esmeralda Esperanza Esteban Estella Esther Ethan Ethel Eugene Eugenia Eunice Eva Evan Eve Evelyn Everett Ezekiel Ezra Fabian Faith Fannie Fatima Faye Felecia Felicia Felipe Felix Fernando Fiona Flora Florence Floyd Forrest Frances Francesca Francine Francis Francisco Frank Frankie Franklin Fred Freda Freddie Freddy Frederick Fredrick Gabriel Gabriela Gabriella Gabrielle Gage Gail Gale Galen Garland Garret Garrett Garry Gary Gavin Gay Gayla Gayle Gena Gene Genesis Geneva Genevieve Geoffrey George Georgette Georgia Georgina Gerald Geraldine Gerard Gerardo Gerry Gianna Gilbert Gilberto Gillian Gina Ginger Gino Giovanni Giselle Gladys Glen Glenda Glenn Glenna Gloria Gordon Grace Gracie Graciela Grady Graham Grant Grayson Greg Gregg Gregory Greta Gretchen Griffin Griselda Guadalupe Guillermo Gustavo Guy Gwen Gwendolyn Hailee Hailey Hal Haleigh Haley Halle Hallie Hanna Hannah Hans Harlan Harley Harmony Harold Harriet Harrison Harry Harvey Hattie Hayden Haylee Hayley Hazel Heath Heather Heaven Hector Heidi Helen Helena Helene Henry Herbert Heriberto Herman Hilary Hilda Hillary Holden Holli Hollie Holly Homer Hope Horace Howard Hubert Hugh Hugo Humberto Hunter Ian Ida Ignacio Ilene Imani India Inez Infant Ingrid Ira Irene Iris Irma Irvin Irving Isaac Isabel Isabella Isabelle Isaiah Isiah Ismael Israel Issac Ivan Ivette Ivory Ivy Jace Jack Jackie Jacklyn Jackson Jaclyn Jacob Jacqueline Jacquelyn Jada Jade Jaden Jadyn Jaiden Jaime Jaimie Jake Jakob Jalen Jamal Jamar Jamel James Jameson Jamey Jami Jamie Jamison Jan Jana Janae Jane Janel Janell Janelle Janessa Janet Janette Janice Janie Janine Janis Janna Jaquan Jaqueline Jared Jarod Jaron Jarred Jarrett Jarrod Jarvis Jasmin Jasmine Jason Jasper Javier Javon Jay Jayden Jayla Jaylen Jaylin Jayme Jayne Jayson Jazmin Jazmine Jean Jeanette Jeanie Jeanine Jeanna Jeanne Jeannette Jeannie Jeannine Jeff Jefferson Jeffery Jeffrey Jeffry Jena Jenifer Jenna Jennie Jennifer Jenny Jerald Jeremiah Jeremy Jeri Jermaine Jerome Jerri Jerrod Jerry Jess Jesse Jessica Jessie Jesus Jewel Jill Jillian Jim Jimmie Jimmy Joan Joann Joanna Joanne Joaquin Jocelyn Jodi Jodie Jody Joe Joel Joelle Joesph Joey Johanna John Johnathan Johnathon Johnna Johnnie Johnny Jolene Jon Jonah Jonas Jonathan Jonathon Joni Jordan Jordon Jordyn Jorge Jose Joseph Josephine Josh Joshua Josiah Josie Josue Jovan Joy Joyce Juan Juana Juanita Jude Judith Judy Julia Julian Juliana Julianna Julianne Julie Juliet Juliette Julio Julissa Julius June Junior Justice Justin Justina Justine Kacey Kacie Kade Kaden Kai Kaila Kailey Kaitlin Kaitlyn Kaitlynn Kaleb Kaleigh Kaley Kali Kameron Kami Kamryn Kara Kareem Karen Kari Karin Karina Karissa Karl Karla Karli Karly Karrie Karyn Kasandra Kasey Kassandra Kassidy Kate Katelin Katelyn Katelynn Katharine Katherine Katheryn Kathi Kathie Kathleen Kathrine Kathryn Kathy Katie Katina Katlyn Katrina Katy Kay Kayla Kaylee Kayleigh Kaylie Kaylin Kaylyn Keaton Keegan Keely Keenan Keisha Keith Kellen Kelley Kelli Kellie Kelly Kelsey Kelsi Kelsie Kelvin Ken Kendal Kendall Kendra Kendrick Kennedy Kenneth Kenny Kent Kenya Keri Kerri Kerrie Kerry Kevin Khalil Kia Kiana Kiara Kiera Kierra Kiersten Kiley Kim Kimberlee Kimberley Kimberly Kira Kirby Kirk Kirsten Kirstin Kobe Kody Kolby Korey Kori Kory Kourtney Kris Krista Kristal Kristen Kristi Kristian Kristie Kristin Kristina Kristine Kristofer Kristopher Kristy Kristyn Krystal Krystle Kurt Kurtis Kyla Kyle Kylee Kyler Kylie Kyra Lacey Lacie Lacy Ladonna Laila Lakeisha Lakesha Lakisha Lamar Lamont Lana Lance Landon Lane Lara Larissa Larry Lashawn Lashonda Latanya Latasha Latisha Latonya Latoya Latrice Laura Laurel Lauren Laurence Lauri Laurie Lauryn Laverne Lawanda Lawrence Layla Layne Lea Leah Leann Leanna Leanne Lee Leeann Leigh Leila Leilani Leland Lena Lenora Leo Leon Leona Leonard Leonardo Leonel Leroy Lesa Lesley Leslie Lesly Lester Leticia Letitia Levi Lewis Lexi Lia Liam Liana Libby Lila Liliana Lillian Lillie Lilly Lily Lincoln Linda Lindsay Lindsey Lindy Lionel Lisa Lisette Liz Liza Lizbeth Lizette Lloyd Logan Lois Lola London Lonnie Lora Loren Lorena Lorene Lorenzo Loretta Lori Lorie Lorna Lorraine Lorri Lorrie Lou Louie Louis Louise Lourdes Lowell Luann Lucas Lucia Lucille Lucinda Lucy Luis Luisa Lukas Luke Lupe Luther Luz Lydia Lyle Lynda Lyndsey Lynette Lynn Lynne Lynnette Mack Mackenzie Macy Madalyn Madeleine Madeline Madelyn Madison Mae Maegan Magdalena Maggie Makayla Makenna Makenzie Malachi Malcolm Malia Malik Malinda Mallory Mandi Mandy Manuel Mara Maranda Marc Marcel Marcella Marci Marcia Marcie Marco Marcos Marcus Marcy Margaret Margarita Margie Margo Marguerite Mari Maria Mariah Marian Mariana Marianna Marianne Maribel Maricela Marie Mariela Marilyn Marina Mario Marion Marisa Marisela Marisol Marissa Maritza Marjorie Mark Markus Marla Marlena Marlene Marlin Marlo Marlon Marquis Marquise Marquita Marsha Marshall Marta Martha Martin Martina Marty Marvin Mary Maryann Maryanne Marybeth Maryellen Mason Mateo Mathew Matt Matthew Mattie Maura Maureen Maurice Mauricio Max Maxine Maxwell Maya Mayra Mckayla Mckenna Mckenzie Meagan Meaghan Megan Meghan Melanie Melina Melinda Melisa Melissa Melodie Melody Melvin Mercedes Meredith Merle Mia Micaela Micah Michael Michaela Micheal Michel Michele Michelle Mickey Miguel Mikaela Mikayla Mike Mikel Mildred Miles Milton Mindy Minnie Miranda Miriam Misti Misty Mitchel Mitchell Mitzi Mohammad Mohammed Moises Mollie Molly Mona Monica Monika Monique Montana Monte Monty Morgan Moriah Morris Moses Mya Myles Myra Myrna Myron Nadia Nadine Nakia Nancy Nanette Naomi Natalia Natalie Natasha Nathalie Nathan Nathanael Nathanial Nathaniel Nayeli Neal Neil Nellie Nelson Nevaeh Nia Nicholas Nichole Nick Nickolas Nicky Nicolas Nicole Nicolette Nigel Nikita Nikki Nikolas Nina Noah Noe Noel Noelle Noemi Nolan Nora Noreen Norma Norman Octavia Olga Oliver Olivia Omar Orlando Oscar Osvaldo Otis Owen Pablo Paige Pam Pamela Paola Paris Parker Pat Patrice Patricia Patrick Patsy Patti Patty Paul Paula Paulette Paulina Pauline Payton Pearl Pedro Peggy Penelope Penny Percy Perla Perry Pete Peter Peyton Phil Philip Phillip Phoebe Phyllis Pierre Piper Polly Portia Precious Preston Princess Priscilla Quentin Quincy Quinn Quintin Quinton Rachael Racheal Rachel Rachelle Rae Rafael Ralph Ramiro Ramon Ramona Randal Randall Randell Randi Randolph Randy Raphael Raquel Rashad Raul Raven Ray Raymond Reagan Reba Rebeca Rebecca Rebekah Reece Reed Reese Regan Reggie Regina Reginald Reid Rena Renae Rene Renee Reuben Rex Reyna Reynaldo Rhett Rhiannon Rhonda Ricardo Richard Richelle Rick Rickey Rickie Ricky Rigoberto Riley Rita Rob Robbie Robbin Robby Robert Roberta Roberto Robin Robyn Rocco Rochelle Rocio Rocky Rod Roderick Rodger Rodney Rodolfo Rodrick Rodrigo Rogelio Roger Roland Rolando Roman Ron Ronald Ronda Ronnie Ronny Roosevelt Rory Rosa Rosalie Rosalind Rosalinda Rosalyn Rosanna Rosanne Rosario Rose Roseann Rosemarie Rosemary Rosetta Rosie Roslyn Ross Roxana Roxann Roxanna Roxanne Roy Royce Ruben Ruby Rudolph Rudy Rufus Russell Rusty Ruth Ryan Rylee Sabrina Sade Sadie Sage Sallie Sally Salvador Salvatore Sam Samantha Sammie Sammy Samuel Sandi Sandra Sandy Santiago Santos Sara Sarah Sarai Sasha Saul Saundra Savanna Savannah Sawyer Scarlett Scot Scott Scottie Scotty Sean Sebastian Selena Selina Serena Serenity Sergio Seth Shaina Shana Shanda Shane Shania Shanice Shanna Shannon Shantel Shari Sharlene Sharon Sharron Shaun Shauna Shawn Shawna Shay Shayla Shayna Shayne Shea Sheena Sheila Shelby Sheldon Shelia Shelley Shellie Shelly Shelton Sheree Sheri Sherman Sherri Sherrie Sherry Sheryl Shirley Shonda Sidney Sierra Silas Silvia Simon Simone Skye Skylar Skyler Sofia Solomon Sondra Sonia Sonja Sonny Sonya Sophia Sophie Spencer Stacey Staci Stacia Stacie Stacy Stanley Stefan Stefanie Stella Stephan Stephanie Stephany Stephen Sterling Steve Steven Stevie Stewart Stuart Sue Summer Sunny Susan Susana Susanna Susanne Susie Suzanne Suzette Sydney Sylvester Sylvia Tabatha Tabitha Talia Tamara Tameka Tamera Tami Tamia Tamika Tammi Tammie Tammy Tamra Tana Tania Tanisha Tanner Tanya Tara Taryn Tasha Tate Tatiana Tatum Tatyana Tayler Taylor Ted Teddy Tera Terence Teresa Teri Terra Terrance Terrell Terrence Terri Terrie Terry Tess Tessa Tevin Thaddeus Thalia Thelma Theodore Theresa Therese Thomas Tia Tiana Tianna Tiara Tierra Tiffani Tiffanie Tiffany Tim Timmy Timothy Tina Tisha Titus Tobias Toby Todd Tom Tomas Tommie Tommy Toni Tonia Tony Tonya Tori Tory Tracey Traci Tracie Tracy Travis Trent Trenton Trevon Trevor Trey Tricia Trina Trinity Trisha Trista Tristan Tristen Tristin Troy Trudy Tucker Tyler Tylor Tyra Tyree Tyrell Tyrone Tyson Ulysses Unknown Uriel Ursula Valarie Valencia Valentina Valeria Valerie Van Vance Vanessa Vaughn Velma Vera Verna Vernon Veronica Vicente Vicki Vickie Vicky Victor Victoria Vince Vincent Viola Violet Virgil Virginia Vivian Viviana Wade Walker Wallace Walter Wanda Warren Wayne Wendell Wendi Wendy Wesley Weston Whitney Wilbert Wilbur Wilfred Wilfredo Will Willard William Willie Willis Wilma Wilson Winston Wyatt Xavier Yadira Yasmin Yasmine Yesenia Yolanda Yvette Yvonne Zachariah Zachary Zachery Zackary Zackery Zane Zion Zoe Zoey".split(" "),
+  );
+  /** First names that are also everyday words ("sales rose", "a grant"): never pointed out for being a name alone. */
+  const NAME_WORDS = new Set(
+    ("Amber Angel April August Autumn Jan Bill Bob Brandy Brook Brooks Candy Carol Chance Charity Chase Clay Cole Crystal Daisy Dale Dawn Dean Destiny Diamond Don Drew Dusty Earl Earnest Ebony Eden Faith Frank Gale Garland Gay Gene Genesis Ginger Glen Grace Grant Guy Harmony Heather Heaven Holly Homer Hope Hunter Iris Ivy Jack Jade Jasmine Jay Jean Jewel Joy June Justice Lance Lane Lily Mark Marina Marshall Mason Max Miles Misty Nick Pat Pearl Penny Piper Precious Princess Randy Ray Reed Rex Rob Rocky Rod Rose Ruby Rusty Sage Sandy Sherry Sterling Sue Summer Sunny Tanner Terry Trinity Violet Wade Walker Will").split(" "),
+  );
+  /** Words around a name written in lower case: "thanks dana", "ask jordan", "dana said". */
+  const LOWER_BEFORE = new Set("hi hey hello dear thanks thank thx ty cc bcc ask asked tell told ping pinged call called email emailed text texted with from per meet met by and".split(" "));
+  const LOWER_AFTER = new Set("said says wrote mentioned asked thinks wants confirmed agreed approved replied sent called emailed".split(" "));
+
+  /** Edit distance with swaps (a typo's usual shapes), giving up past `max`. */
+  function typoDistance(a, b, max) {
+    if (Math.abs(a.length - b.length) > max) return max + 1;
+    let prev2 = null;
+    let prev = Array.from({ length: b.length + 1 }, (_, j) => j);
+    for (let i = 1; i <= a.length; i++) {
+      const cur = [i];
+      let best = i;
+      for (let j = 1; j <= b.length; j++) {
+        let v = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+        if (prev2 && i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) v = Math.min(v, prev2[j - 2] + 1);
+        cur.push(v);
+        if (v < best) best = v;
+      }
+      if (best > max) return max + 1;
+      prev2 = prev;
+      prev = cur;
+    }
+    return prev[b.length];
+  }
+
+  /**
+   * More names that may still be in, beyond capitalized words: a listed
+   * person's name in lower case ("thanks rachel"), a misspelling of a listed
+   * name ("Rachal", "Best Bite"), and a common first name nobody listed. The
+   * first two carry the listed name, so adding one makes it another name for
+   * it (Rachel Kim | rachel) and it restores as that name.
+   */
+  function moreSuggestions(src, options, add) {
+    // Placeholders are not words of the text.
+    const text = src.replace(/\[[A-Z][A-Z0-9-]*\]/g, (m) => " ".repeat(m.length));
+    const forms = [];
+    for (const kind of LISTS) {
+      for (const t of parseTerms(((options && options.lists) || {})[kind], kind)) {
+        if (t.alias) continue;
+        forms.push({ form: t.term, of: t.term, kind });
+        if (kind === "PERSON") for (const part of t.term.split(/\s+/)) if (part !== t.term && part.length >= 3 && !COMMON_WORDS.has(part) && !NAME_WORDS.has(part)) forms.push({ form: part, of: t.term, kind, part: true });
+      }
+    }
+    const lines = text.split(/\r?\n/);
+    let at = 0;
+    const words = []; // { w, line, k, at }
+    lines.forEach((line, n) => {
+      [...line.matchAll(/[\p{L}][\p{L}'’-]*/gu)].forEach((m, k) => words.push({ w: m[0].replace(/['’]s$/, ""), line: n, k, at: at + m.index }));
+      at += line.length + 1;
+    });
+    const rows = lines.map(() => []);
+    for (const x of words) rows[x.line].push(x);
+    const lowerSeen = new Set(words.filter((x) => x.w === x.w.toLowerCase()).map((x) => x.w));
+    // A listed person's name in lower case.
+    const parts = new Map(forms.filter((f) => f.part).map((f) => [f.form.toLowerCase(), f]));
+    for (const x of words) {
+      const f = parts.get(x.w);
+      if (f && x.w === x.w.toLowerCase()) add(x.w, 1, x.at, { why: `in lower case, like ${f.of}`, list: f.kind, aliasOf: f.of });
+    }
+    // A misspelling: one letter off (two in a long name), in one word or two.
+    const seen = new Set();
+    const long = forms.filter((f) => f.form.length >= 5);
+    if (long.length && long.length * words.length <= 4e6) {
+      const inPair = new Set();
+      for (let i = 0; i < words.length; i++) {
+        for (const span of [2, 1]) {
+          if (span === 2 && (i + 1 >= words.length || words[i + 1].line !== words[i].line)) continue;
+          if (span === 1 && inPair.has(i)) continue;
+          const cand = span === 1 ? words[i].w : `${words[i].w} ${words[i + 1].w}`;
+          const low = cand.toLowerCase();
+          if (seen.has(low) || cand.length < 5) continue;
+          seen.add(low);
+          for (const f of long) {
+            if (f.form.split(/\s+/).length !== span) continue;
+            const flow = f.form.toLowerCase();
+            if (low === flow || (low[0] !== flow[0] && low[1] !== flow[1])) continue;
+            if (typoDistance(low, flow, flow.length >= 10 ? 2 : 1) <= (flow.length >= 10 ? 2 : 1)) {
+              add(cand, 1, words[i].at, { why: `spelled like ${f.of}`, list: f.kind, aliasOf: f.of });
+              if (span === 2) inPair.add(i).add(i + 1);
+              break;
+            }
+          }
+        }
+      }
+    }
+    // A common first name: capitalized at the start of a sentence (the
+    // capitalized words mid-sentence are found above), or in lower case
+    // beside a greeting or a "said".
+    for (const x of words) {
+      const cap = x.w[0].toUpperCase() + x.w.slice(1).toLowerCase();
+      if (!FIRST_NAMES.has(cap) || NAME_WORDS.has(cap) || COMMON_WORDS.has(cap) || BUSINESS.has(cap) || parts.has(x.w.toLowerCase())) continue;
+      const row = rows[x.line];
+      const prev = row[x.k - 1];
+      const next = row[x.k + 1];
+      if (x.w === cap) {
+        // Beside another capitalized word it is part of a name found above;
+        // also written in lower case, it is a word ("Rose" and "sales rose").
+        const capital = (y) => y && /^\p{Lu}/u.test(y.w);
+        if (capital(prev) || capital(next) || lowerSeen.has(x.w.toLowerCase())) continue;
+        add(x.w, 3, x.at, { why: "a common first name", list: "PERSON", soft: true });
+      } else if (x.w === x.w.toLowerCase() && ((prev && LOWER_BEFORE.has(prev.w.toLowerCase())) || (next && LOWER_AFTER.has(next.w.toLowerCase())) || row.length === 1)) {
+        add(x.w, 3, x.at, { why: "a first name in lower case", list: "PERSON" });
+      }
+    }
+  }
+
   // Titles and suffixes: never a name of their own (nameParts) and a strong
   // sign that a name follows (suggestNames).
   const TITLES = new Set("Mr Ms Mrs Mx Dr Prof Miss Jr Sr PhD II III IV Esq".split(" "));
@@ -1077,17 +1420,25 @@ const RedactCore = (() => {
 
   function suggestNames(text, options, opts = {}) {
     const src = String(text || "");
-    const listed = new Set(allTerms(options || {}).map((t) => t.term.toLowerCase()));
+    // A name part ("Rachel") is listed only as capitalized, so "rachel" is not.
+    const terms = allTerms(options || {});
+    const listed = new Set(terms.filter((t) => !t.caseSensitive).map((t) => t.term.toLowerCase()));
+    const listedCased = new Set(terms.filter((t) => t.caseSensitive).map((t) => t.term));
     const lowerWords = new Set((src.match(/(?<![\p{L}'’-])\p{Ll}[\p{L}'’-]*/gu) || []).map((w) => w.toLowerCase()));
     const found = new Map(); // name -> { name, count, tier, first }
-    const add = (name, tier, at) => {
+    // `extra` (from moreSuggestions) says why and which list, and for a
+    // lower-case or misspelled listed name, which name it is another way of
+    // writing. A "soft" find only adds a name the other passes missed.
+    const add = (name, tier, at, extra) => {
       const key = name.toLowerCase();
-      if (listed.has(key)) return;
+      if (listed.has(key) || listedCased.has(name)) return;
       const f = found.get(key);
       if (f) {
-        f.count++;
-        f.tier = Math.min(f.tier, tier);
-      } else found.set(key, { name, count: 1, tier, first: at });
+        if (extra && extra.soft && !f.soft) return;
+        // A name the capitalized pass already counted is not counted again.
+        if (!(extra && !f.why)) f.count++;
+        if (tier < f.tier || (extra && !f.why)) Object.assign(f, extra || {}, { tier: Math.min(f.tier, tier) });
+      } else found.set(key, { name, count: 1, tier, first: at, ...(extra || {}) });
     };
     const lines = src.split(/\r?\n/);
     let offset = 0;
@@ -1144,7 +1495,10 @@ const RedactCore = (() => {
         add(run.join(" "), tier, at0);
       }
     }
-    return [...found.values()].sort((a, b) => a.tier - b.tier || b.count - a.count || a.first - b.first).map(({ name, count, tier }) => ({ name, count, tier }));
+    moreSuggestions(src, options, add);
+    return [...found.values()]
+      .sort((a, b) => a.tier - b.tier || b.count - a.count || a.first - b.first)
+      .map(({ name, count, tier, why, list, aliasOf }) => ({ name, count, tier, ...(why ? { why } : {}), ...(list ? { list } : {}), ...(aliasOf ? { aliasOf } : {}) }));
   }
 
   /** "Contact Name" → "CONTACT-NAME": the placeholder says what kind of value it hides. */
@@ -1356,18 +1710,64 @@ const RedactCore = (() => {
       stats.replaced++;
       plan.push({ start: m.index, end: m.index + ph.length, out: map.get(ph) });
     }
+    if (stats.variants) planVariants(s, map, stats, skip, inLink, plan);
     return plan;
+  }
+
+  /**
+   * Placeholders the AI wrote a little differently: [Company-01], COMPANY-01
+   * with no brackets, [COMPANY 01], [COMPANY-1], a typographic dash, wide
+   * brackets. Each is read in one loose form (capitals, one hyphen, no
+   * leading zeros) and matched against the key. Nothing is restored this way
+   * unless the person asks (stats.loose): until then each is only counted, so
+   * the page can say what it saw. Links and tags are left alone as always.
+   */
+  // Each part is split from the next by one dash (spaces around it allowed)
+  // or by spaces alone, never both ways at once, and there are at most six
+  // parts: an unclosed bracket followed by many spaced words can't make the
+  // matcher try every way of splitting the gaps.
+  const VARIANT = /[[［【] {0,2}([A-Za-z][A-Za-z0-9]*(?:(?: {0,2}[-\u2010-\u2014_] {0,2}| {1,2})[A-Za-z0-9]+){1,5}) {0,2}[\]］】]|(?<![\p{L}\p{N}[［【_\u2010-\u2014-])([A-Za-z][A-Za-z0-9]*(?:[-\u2010-\u2014_][A-Za-z0-9]+){1,5})(?![\p{L}\p{N}\]］】_\u2010-\u2014-])/gu;
+  const loose = (s) => s.toUpperCase().replace(/[^\S\r\n]*[-\u2010-\u2014_ ][^\S\r\n]*/g, "-").replace(/-0+(?=\d)/g, "-");
+  const looseMaps = new WeakMap();
+  function planVariants(s, map, stats, skip, inLink, plan) {
+    let lm = looseMaps.get(map);
+    if (!lm) {
+      lm = new Map();
+      for (const ph of map.keys()) if (!lm.has(loose(ph.slice(1, -1)))) lm.set(loose(ph.slice(1, -1)), ph);
+      looseMaps.set(map, lm);
+    }
+    let added = false;
+    for (const m of s.matchAll(VARIANT)) {
+      const ph = lm.get(loose(m[1] || m[2]));
+      if (!ph || m[0] === ph) continue;
+      if (inLink(m.index, m.index + m[0].length) || (skip && skip(m.index))) {
+        if (stats.loose) stats.inLinks++;
+        continue;
+      }
+      stats.unknown.delete(m[0]);
+      if (!stats.loose) {
+        stats.variants.set(m[0], (stats.variants.get(m[0]) || 0) + 1);
+        continue;
+      }
+      stats.replaced++;
+      plan.push({ start: m.index, end: m.index + m[0].length, out: map.get(ph) });
+      added = true;
+    }
+    if (added) plan.sort((a, b) => a.start - b.start);
   }
 
   const keyMap = (key) => new Map((key && Array.isArray(key.entries) ? key.entries : []).map((e) => [e.placeholder, e.value]));
 
-  function restoreWith(s, map, skip) {
-    const stats = { replaced: 0, inLinks: 0, unknown: new Set() };
+  /** `loose`: also restore the placeholders the AI wrote differently (see planVariants). */
+  const restoreStats = (looseOn) => ({ replaced: 0, inLinks: 0, unknown: new Set(), variants: new Map(), loose: !!looseOn });
+  const statsOut = (stats) => ({ replaced: stats.replaced, inLinks: stats.inLinks, unknown: [...stats.unknown], variants: [...stats.variants] });
+  function restoreWith(s, map, skip, looseOn) {
+    const stats = restoreStats(looseOn);
     const text = applyPlan(s, planRestore(s, map, stats, skip));
-    return { text, replaced: stats.replaced, inLinks: stats.inLinks, unknown: [...stats.unknown] };
+    return { text, ...statsOut(stats) };
   }
-  function restore(text, key) {
-    return restoreWith(String(text || ""), keyMap(key));
+  function restore(text, key, looseOn) {
+    return restoreWith(String(text || ""), keyMap(key), undefined, looseOn);
   }
 
   /** Restore into a web page (a dashboard the AI built). Each real value goes
@@ -1375,7 +1775,7 @@ const RedactCore = (() => {
    *  break the page or run as code; placeholders inside tags or links stay
    *  put, as in any restore. */
   const escHtml = (v) => String(v).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
-  function restoreHtml(text, key) {
+  function restoreHtml(text, key, looseOn) {
     const s = disarm(String(text || ""));
     const map = new Map([...keyMap(key)].map(([ph, v]) => [ph, escHtml(v)]));
     // Never inside a tag, found the way a browser reads one (a ">" inside
@@ -1388,7 +1788,7 @@ const RedactCore = (() => {
       while (t < tags.length && tags[t][1] <= at) t++;
       return t < tags.length && at > tags[t][0];
     };
-    const r = restoreWith(s, map, inTag);
+    const r = restoreWith(s, map, inTag, looseOn);
     return { ...r, text: lockPage(r.text) };
   }
 
@@ -1524,7 +1924,7 @@ const RedactCore = (() => {
   // was hidden last time: the lists (aliases and labels included), the
   // automatic finds, and each column's Keep, Mask or Drop by header. It adds
   // nothing the key doesn't already hold: every listed name is in its entries.
-  const OPTION_KEYS = ["email", "phone", "ssn", "card", "money", "url"];
+  const OPTION_KEYS = ["email", "phone", "ssn", "card", "bank", "ids", "secrets", "ip", "money", "url", "address"];
   const COLUMN_ACTIONS = ["keep", "mask", "drop"];
   const plainObject = (o) => !!o && typeof o === "object" && !Array.isArray(o);
   const textOk = (s) => typeof s === "string" && s.length <= 200000;
@@ -1588,7 +1988,7 @@ const RedactCore = (() => {
       }
     });
 
-  return { KIND_LABEL, LISTS, COMMON_WORDS, tidy, pctDecode, csvCell, Session, parseTerms, allTerms, knownTerms, redactName, nameParts, joinedForms, personColumn, suggestNames, planMatches, applyPlan, planRestore, keyMap, compileTerms, findMatches, redactText, redactCsv, parseCsv, looksLikeCsv, suggestAction, restore, restoreHtml, hasScript, validateKey, validProfile, profileOf, mergeLines, keySwap, parseKey, fileKind, looksBinary, incompatibleHelp, luhn, cardSpans, headerPrefix, mimeProblem };
+  return { restoreStats, statsOut, KIND_LABEL, LISTS, COMMON_WORDS, tidy, pctDecode, csvCell, Session, parseTerms, allTerms, knownTerms, redactName, nameParts, joinedForms, personColumn, suggestNames, planMatches, applyPlan, planRestore, keyMap, compileTerms, findMatches, redactText, redactCsv, parseCsv, looksLikeCsv, suggestAction, restore, restoreHtml, hasScript, validateKey, validProfile, profileOf, mergeLines, keySwap, parseKey, fileKind, looksBinary, incompatibleHelp, luhn, cardSpans, headerPrefix, mimeProblem };
 })();
 
 /* ------------------------------------------------------------------ */
@@ -2860,7 +3260,7 @@ const OfficeCore = (() => {
 
   const placeholdersIn = (s) => s.match(/\[[A-Z][A-Z0-9-]*\]/g) || [];
 
-  async function restorePackage(pkg, key, depth = 0) {
+  async function restorePackage(pkg, key, depth = 0, looseOn = false) {
     // A file inside a file inside a file is as deep as Office goes in practice.
     if (depth > 2) throw new Error("too-deep");
     // Macros, controls and parts this tool can't read could act on the real
@@ -2869,7 +3269,7 @@ const OfficeCore = (() => {
     if (pkg.summary.blockers.some((b) => b.why !== "media")) throw new Error("blocked");
     if (pkg.kind === "docx" && pkg.entries.some((e) => /^word\/.+\.xml$/.test(e.name) && fieldTypes(dec.decode(e.data)).some((f) => FETCHING_FIELDS.has(f)))) throw new Error("fetches");
     const map = RedactCore.keyMap(key);
-    const stats = { replaced: 0, inLinks: 0, unknown: new Set() };
+    const stats = RedactCore.restoreStats(looseOn);
     const plan = (s) => RedactCore.planRestore(s, map, stats);
     const bare = new Map([...map].map(([ph, v]) => [ph.slice(1, -1), v]));
     const book = pkg.kind === "xlsx" ? readWorkbook(pkg) : null;
@@ -2888,10 +3288,11 @@ const OfficeCore = (() => {
     for (const e of pkg.entries) {
       if (!isXml(e.name)) {
         if (/\/embeddings\//.test(e.name) && OFFICE_EMBED.test(e.name)) {
-          const inner = await restorePackage(await open(e.data, pkg.budget), key, depth + 1);
+          const inner = await restorePackage(await open(e.data, pkg.budget), key, depth + 1, looseOn);
           stats.replaced += inner.replaced;
           stats.inLinks += inner.inLinks;
           inner.unknown.forEach((u) => stats.unknown.add(u));
+          for (const [v, n] of inner.variants) stats.variants.set(v, (stats.variants.get(v) || 0) + n);
           out.push({ name: e.name, data: inner.bytes });
           continue;
         }
@@ -2908,7 +3309,7 @@ const OfficeCore = (() => {
       xml = rewriteXml(xml, e.name, ctx);
       out.push({ name: e.name, data: enc.encode(xml) });
     }
-    return { bytes: await writeZip(out), replaced: stats.replaced, inLinks: stats.inLinks, unknown: [...stats.unknown] };
+    return { bytes: await writeZip(out), ...RedactCore.statsOut(stats) };
   }
 
   /** Where in the file a part is, in words a person recognizes. */
@@ -3903,6 +4304,11 @@ if (typeof document !== "undefined") {
     card: $("opt-card").checked,
     money: $("opt-money").checked,
     url: $("opt-url").checked,
+    bank: $("opt-bank").checked,
+    ids: $("opt-ids").checked,
+    secrets: $("opt-secrets").checked,
+    ip: $("opt-ip").checked,
+    address: $("opt-address").checked,
   });
 
   const IS_MAC = /Mac|iPhone|iPad/.test((navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || navigator.userAgent || "");
@@ -4313,6 +4719,16 @@ if (typeof document !== "undefined") {
     restoredFile = null;
     $("restored").value = "";
     $("restore-out").classList.add("hidden");
+    $("loose-row").classList.add("hidden");
+  }
+
+  /** What to say about placeholders the AI wrote differently, and whether to offer to restore them. */
+  function variantNote(r, looseOn) {
+    $("loose-row").classList.toggle("hidden", !r.variants.length);
+    if (!r.variants.length) return looseOn ? " That includes the placeholders Claude wrote differently." : "";
+    const n = r.variants.reduce((t, [, c]) => t + c, 0);
+    const list = r.variants.slice(0, 6).map(([v, c]) => (c > 1 ? `${v} (${c} times)` : v)).join(", ") + (r.variants.length > 6 ? ", and more" : "");
+    return ` Claude wrote ${n === 1 ? "1 placeholder" : `${n} placeholders`} a little differently, and ${n === 1 ? "it was" : "they were"} left as written: ${list}. If ${n === 1 ? "it is one of yours" : "they are yours"}, click Restore these too.`;
   }
 
   // An Office file waits for Restore, like every other answer. Restored the
@@ -4328,7 +4744,7 @@ if (typeof document !== "undefined") {
     $("restore-status").textContent = `Opened ${f.name}. Click Restore, then save the restored file.`;
   }
 
-  async function restoreOffice(f) {
+  async function restoreOffice(f, looseOn = false) {
     hideWarn("restore");
     clearRestored();
     const key = lastKey || loadedKey;
@@ -4339,7 +4755,7 @@ if (typeof document !== "undefined") {
     $("restore-status").textContent = `Restoring ${f.name}…`;
     try {
       const pkg = await OfficeCore.open(await readBytes(f));
-      const r = await OfficeCore.restorePackage(pkg, key);
+      const r = await OfficeCore.restorePackage(pkg, key, 0, looseOn);
       restoredFile = { bytes: r.bytes, name: restoredName(f.name, key), kind: pkg.kind };
       showOpened("restore", f.name);
       $("restored").value = OfficeCore.extractText(await OfficeCore.open(r.bytes));
@@ -4348,6 +4764,7 @@ if (typeof document !== "undefined") {
       let msg = `Restored ${plural(r.replaced, "placeholder")} in ${f.name}.`;
       if (r.inLinks) msg += ` ${r.inLinks} inside links ${r.inLinks === 1 ? "was" : "were"} left as placeholders: real values never belong inside a link.`;
       if (r.unknown.length) msg += ` Not in this key, left as they were: ${r.unknown.join(", ")}.`;
+      msg += variantNote(r, looseOn);
       $("restore-status").textContent = `${msg} Read the text below, then save the restored ${WORD[pkg.kind]}.`;
     } catch (err) {
       clearRestored();
@@ -4392,7 +4809,7 @@ if (typeof document !== "undefined") {
   });
 
   /* ---- Folded settings say what they hold, and open when they hold more -- */
-  const AUTO = [["email", "email"], ["phone", "phone"], ["ssn", "SSNs"], ["card", "card numbers"], ["money", "money"], ["url", "links"]];
+  const AUTO = [["email", "email"], ["phone", "phone"], ["ssn", "SSNs"], ["card", "card numbers"], ["bank", "bank and tax numbers"], ["ids", "IDs"], ["secrets", "passwords and keys"], ["ip", "IP addresses"], ["money", "money"], ["url", "links"], ["address", "street addresses"]];
   function syncFolds() {
     const on = AUTO.filter(([k]) => $(`opt-${k}`).checked).map(([, t]) => t);
     $("auto-summary").textContent = on.length ? on.join(", ") : "nothing";
@@ -4660,7 +5077,7 @@ if (typeof document !== "undefined") {
       name.textContent = x.name;
       const meta = document.createElement("span");
       meta.className = "hint";
-      meta.textContent = `${x.count === 1 ? "once" : `${x.count} times`}, ${WHY[x.tier]}`;
+      meta.textContent = `${x.count === 1 ? "once" : `${x.count} times`}, ${x.why || WHY[x.tier]}`;
       name.append(meta);
       const sel = document.createElement("select");
       sel.id = `suggest-${i}`;
@@ -4671,14 +5088,14 @@ if (typeof document !== "undefined") {
         o.textContent = t;
         sel.append(o);
       }
-      sel.value = listHolding(x.name);
+      sel.value = x.list || listHolding(x.name);
       const wrap = selectWrap(sel);
       const addBtn = document.createElement("button");
       addBtn.type = "button";
       addBtn.className = "primary";
       addBtn.textContent = "Add";
       addBtn.setAttribute("aria-label", `Add ${x.name}`);
-      addBtn.addEventListener("click", () => addSuggestion(x.name, sel.value));
+      addBtn.addEventListener("click", () => addSuggestion(x.name, sel.value, x.aliasOf));
       const skip = document.createElement("button");
       skip.type = "button";
       skip.textContent = "Dismiss";
@@ -4700,16 +5117,27 @@ if (typeof document !== "undefined") {
 
   // Put the name on the chosen list (once), then redact again the usual way,
   // so text, a CSV and an Office file all go through one path.
-  async function addSuggestion(name, kind) {
+  // A lower-case or misspelled listed name ("rachel", "Rachal") joins that
+  // name's line as another name for it (Rachel Kim | rachel), so it takes
+  // the same placeholder and restores as the listed name.
+  async function addSuggestion(name, kind, aliasOf) {
     const box = listBox(kind);
-    const lines = box.value.split(/\r?\n/).map((l) => l.split(/\s*=>\s*/)[0].split("|")[0].trim().toLowerCase());
-    if (!lines.includes(name.toLowerCase())) box.value = box.value.replace(/\s*$/, box.value.trim() ? "\n" : "") + name;
+    const rows = box.value.split(/\r?\n/);
+    const firsts = rows.map((l) => l.split(/\s*=>\s*/)[0].split("|")[0].trim().toLowerCase());
+    const owner = aliasOf ? firsts.indexOf(aliasOf.toLowerCase()) : -1;
+    let added = name;
+    if (owner >= 0) {
+      const [names, ...label] = rows[owner].split(/(\s*=>\s*)/);
+      rows[owner] = `${names.replace(/\s+$/, "")} | ${name}${label.join("")}`;
+      box.value = rows.join("\n");
+      added = `${name} as another name for ${aliasOf}`;
+    } else if (!firsts.includes(name.toLowerCase())) box.value = box.value.replace(/\s*$/, box.value.trim() ? "\n" : "") + name;
     const label = LIST_CHOICES.find(([v]) => v === kind)[1];
     syncFolds();
     if (office) await redactOffice();
     else $("btn-redact").click();
     const st = $("redact-status");
-    st.textContent = `Added ${name} to ${label} and redacted again. ${st.textContent}`;
+    st.textContent = `Added ${added} to ${label} and redacted again. ${st.textContent}`;
   }
 
   $("suggest-dismiss").addEventListener("click", () => {
@@ -4839,6 +5267,7 @@ if (typeof document !== "undefined") {
   });
 
   $("btn-restore").addEventListener("click", () => (answerOffice ? restoreOffice(answerOffice) : restoreText()));
+  $("btn-restore-loose").addEventListener("click", () => (answerOffice ? restoreOffice(answerOffice, true) : restoreText(true)));
   // One click for the common case: read Claude's answer from the clipboard,
   // restore it, and put the restored text back on the clipboard.
   $("btn-paste-restore").addEventListener("click", async () => {
@@ -4871,14 +5300,15 @@ if (typeof document !== "undefined") {
     }
   });
 
-  function restoreText() {
+  function restoreText(looseOn = false) {
+    $("loose-row").classList.add("hidden");
     // The newest key wins: a redaction run after loading a key extends it.
     const key = lastKey || loadedKey;
     if (!key) {
       $("restore-status").textContent = "Redact something on the Redact tab first, or open the client key at the top of the page.";
       return false;
     }
-    const r = (answerPage ? RedactCore.restoreHtml : RedactCore.restore)($("restore-in").value, key);
+    const r = (answerPage ? RedactCore.restoreHtml : RedactCore.restore)($("restore-in").value, key, looseOn);
     restoredFile = answerPage
       ? { bytes: r.text, name: restoredName(answerPage, key), kind: "html" }
       : null;
@@ -4897,6 +5327,7 @@ if (typeof document !== "undefined") {
       msg += ` ${r.inLinks} inside web links ${r.inLinks === 1 ? "was" : "were"} left as placeholders: your real values never belong inside a link, and an AI answer that puts them there may have been tampered with.`;
     }
     if (r.unknown.length) msg += ` Not in this key, left as they were: ${r.unknown.join(", ")}.`;
+    msg += variantNote(r, looseOn);
     $("restore-status").textContent = msg;
     return true;
   }

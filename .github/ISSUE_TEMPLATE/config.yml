@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security problem privately
+    url: https://github.com/cortexa-consulting/rita-agent/security/advisories/new
+    about: For anything that could expose client data, make Claude follow a planted instruction, or make Redact & Restore send or restore something it shouldn't. Please don't use a public issue.
+  - name: Cortexa Consulting
+    url: https://www.cortexa-consulting.ai/contact
+    about: Questions about the kit, the workshop, or setting it up for your team.

