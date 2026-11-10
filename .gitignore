@@ -10,3 +10,8 @@ outputs/
 # Operating system clutter.
 .DS_Store
 Thumbs.db
+
+# Claude Code's personal settings. Approving a command with "don't ask again"
+# saves it here exactly as typed, passwords and keys included. Never commit it.
+**/.claude/settings.local.json
+**/CLAUDE.local.md
