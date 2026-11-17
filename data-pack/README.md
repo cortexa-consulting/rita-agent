@@ -23,6 +23,7 @@ review is Thursday, November 12.
 
 | Folder | What it is |
 | --- | --- |
+| `calendar/practice-calendar.ics` | Taylor's week of November 9: ten meetings, the Dalton QBR among them. A calendar file, not a connected calendar. One invite is not what it seems. |
 | `inbox/` | 18 emails from Monday morning (`.eml` files): the client, retailers, your field team, your manager, IT, and a few you should not trust. |
 | `sales/dalton-sell-through-q3-2026.csv` | Dalton's weekly sell-through for Q3 (13 weeks ending Oct 3): retailer × region × product, units, dollars, price, inventory, promotions. **It has problems. Find them before you trust it.** |
 | `sales/category-share-by-brand-q3-2026.csv` | A retail panel: weekly laptop and monitor units for Dalton and its competitors, by retailer. Use it for market share. **Licensed data.** Halcrest's (fictional) license lets the team use it in Dalton's own reports and decks, footnoted "Retail panel data, licensed". It may not go to any other client, be shared outside Halcrest and Dalton, or be uploaded anywhere else. |

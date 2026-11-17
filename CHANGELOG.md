@@ -3,6 +3,15 @@
 The kit's version is the AISLE plugin version in `.claude-plugin/plugin.json`.
 Each release is tagged (`v1.1.2`) so you can download or compare a version.
 
+## 1.1.3 (2026-11-17)
+
+- **New practice file:** `data-pack/calendar/practice-calendar.ics`, Taylor's
+  week of November 9, 2026, for the first-agent exercise (a seven-day meeting
+  brief). Ten meetings that match the inbox, with invented `.example`
+  addresses. One invite carries text that tries to give Claude orders, like
+  the vendor email in the inbox; the brief should flag it and do nothing it
+  asks.
+
 ## 1.1.2 (2026-11-07)
 
 Redact & Restore finds more on its own and catches placeholders Claude wrote
